@@ -2,14 +2,12 @@ module JSON
   module RPC
 
     class InternalError < Exception
-      CODE = -32603
-      MESSAGE = "internal-error"
-
       getter data : String?
       getter code : Int32
 
-      def initialize(message : String, @code : Int32, @data : String? = nil)
-        super(message)
+      def initialize(@data : String? = nil, @cause : Exception? = nil)
+        @message = "internal-error"
+        @code = -32603
       end
 
       def to_json(json : JSON::Builder)
@@ -22,38 +20,30 @@ module JSON
     end
 
     class ParseError < InternalError
-      CODE = -32700
-      MESSAGE = "parse-error"
-
-      def initialize(data : String? = nil)
-        super(MESSAGE, CODE, data)
+      def initialize(@data : String? = nil, @cause : Exception? = nil)
+        @message = "parse-error"
+        @code = -32700
       end
     end
 
     class InvalidRequest < InternalError
-      CODE = -32600
-      MESSAGE = "invalid-request"
-
-      def initialize(data : String? = nil)
-        super(MESSAGE, CODE, data)
+      def initialize(@data : String? = nil, @cause : Exception? = nil)
+        @message = "invalid-request"
+        @code = -32600
       end
     end
 
     class MethodNotFound < InternalError
-      CODE = -32601
-      MESSAGE = "method-not-found"
-
-      def initialize(data : String? = nil)
-        super(MESSAGE, CODE, data)
+      def initialize(@data : String? = nil, @cause : Exception? = nil)
+        @message = "method-not-found"
+        @code = -32601
       end
     end
 
     class InvalidParams < InternalError
-      CODE = -32602
-      MESSAGE = "invalid-params"
-
-      def initialize(data : String? = nil)
-        super(MESSAGE, CODE, data)
+      def initialize(@data : String? = nil, @cause : Exception? = nil)
+        @message = "invalid-params"
+        @code = -32602
       end
     end
 

@@ -28,11 +28,11 @@ module JSON
         begin
           @result = yield
         rescue ParseException
-          raise JSON::RPC::ParseError.new
+          @error = JSON::RPC::ParseError.new
         rescue Exception
-          raise JSON::RPC::InternalError.new
+          @error = JSON::RPC::InternalError.new
         rescue err : JSON::RPC::RPCError
-          @error = {"code" => err.code, "message" => err.message}
+          @error = err
         end
       end
 
@@ -92,9 +92,10 @@ module JSON
             return json.end_object
           end
 
-          if @result
+          case
+          when @result
             json.field("result", @result.to_json(json))
-          elsif @error
+          when @error
             json.field("error", @error.to_json(json))
           else
             message = "request did not have a result or error"

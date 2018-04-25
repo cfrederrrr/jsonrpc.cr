@@ -3,6 +3,8 @@ require "json"
 
 # local dependencies
 require "./json/exceptions"
+require "./json/request"
+require "./json/response"
 
 module JSON
   module RPC
@@ -19,8 +21,6 @@ module JSON
 
       def invoke()
     end
-
-
 
   end
 end
