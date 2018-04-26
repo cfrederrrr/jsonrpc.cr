@@ -9,10 +9,25 @@ module JSON
 
       # This key is included if the method did not run successfully. It is
       # excluded if there was no error of any kind.
-      getter error : Hash(String, Type)?
+      getter error : GenericError?
 
       # Response has to include the same `@id` as its corresponding `Request`
       getter id : String|Int32?
+
+
+      ::JSON.mapping(
+        jsonrpc: String,
+        result: Type,
+        error: {
+          type: GenericError?,
+          nilable: true
+        },
+        res_id: {
+          type: String|Int32?,
+          nilable: true,
+          key: "id"
+        }
+      )
 
       # ```
       # Response.new 12345 do |response|
@@ -24,17 +39,22 @@ module JSON
       # end
       # ```
       #
-      def initialize(@id)
-        begin
-          @result = yield
-        rescue ParseException
-          @error = JSON::RPC::ParseError.new
-        rescue Exception
-          @error = JSON::RPC::InternalError.new
-        rescue err : JSON::RPC::RPCError
-          @error = err
-        end
-      end
+      # def initialize()
+      #   begin
+      #     @result = yield
+      #   rescue ParseException
+      #     @error = JSON::RPC::ParseError.new
+      #   rescue Exception
+      #     @error = JSON::RPC::InternalError.new
+      #   rescue err : JSON::RPC::RPCError
+      #     @error = err
+      #   end
+      # end
+
+      def initialize(
+        @result : Type,
+        @error :
+      )
 
       # Parse a response from an opaque string
       #
@@ -98,7 +118,7 @@ module JSON
           when @error
             json.field("error", @error.to_json(json))
           else
-            message = "request did not have a result or error"
+            message = "response did not have a result or error"
             json.field("error", InternalError.new(message).to_json(json))
           end
         end

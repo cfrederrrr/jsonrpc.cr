@@ -1,14 +1,9 @@
 module JSON
   module RPC
 
-    class InternalError < Exception
-      getter data : String?
-      getter code : Int32
+    class GenericError < Exception
 
-      def initialize(@data : String? = nil, @cause : Exception? = nil)
-        @message = "internal-error"
-        @code = -32603
-      end
+      getter data : String?
 
       def to_json(json : JSON::Builder)
         json.object do
@@ -19,31 +14,41 @@ module JSON
       end
     end
 
-    class ParseError < InternalError
-      def initialize(@data : String? = nil, @cause : Exception? = nil)
-        @message = "parse-error"
-        @code = -32700
-      end
-    end
-
-    class InvalidRequest < InternalError
+    class InvalidRequest < GenericError
       def initialize(@data : String? = nil, @cause : Exception? = nil)
         @message = "invalid-request"
         @code = -32600
       end
     end
 
-    class MethodNotFound < InternalError
+    class MethodNotFound < GenericError
       def initialize(@data : String? = nil, @cause : Exception? = nil)
         @message = "method-not-found"
         @code = -32601
       end
     end
 
-    class InvalidParams < InternalError
+    class InvalidParams < GenericError
       def initialize(@data : String? = nil, @cause : Exception? = nil)
         @message = "invalid-params"
         @code = -32602
+      end
+    end
+
+    class InternalError < GenericError
+      getter data : String?
+      getter code : Int32
+
+      def initialize(@data : String? = nil, @cause : Exception? = nil)
+        @message = "internal-error"
+        @code = -32603
+      end
+    end
+
+    class ParseError < GenericError
+      def initialize(@data : String? = nil, @cause : Exception? = nil)
+        @message = "parse-error"
+        @code = -32700
       end
     end
 

@@ -5,47 +5,52 @@ module JSON
 
       # A `String` specifying the RPC method to be invoked.
       #
-      getter method : String
+      getter :method
 
       # An `Array` or `Hash` that holds the parameter arguments.
       # - `Array` means positional arguments
       # - `Hash` means named arguments
       # - Omitting this key means no arguments.
       #
-      getter params : Array(Type)|Hash(String, Type)?
+      getter :params
 
       # An identifier established by the client. If `nil` or excluded, then
       # the client does not expect a response - this is known as a
       # "notification" according to JSON RPC 2.0 specification
       #
-      getter id : String|Int32?
+      getter :req_id
 
-      def initialize(jsonrpc, method, params = nil, id = nil)
-        raise InvalidRequest.new unless (
-          jsonrpc == JSON::RPC::VERSION &&
-          method.is_a?(String)
+      alias Param = Array(Type)|Hash(String, Type)?
+
+      ::JSON.mapping(
+        jsonrpc: String,
+        method: String,
+        params: {
+          type: Param,
+          nilable: true
+        },
+        req_id: {
+          type: String|Int32?,
+          nilable: true,
+          key: "id"
+        }
+      )
+
+      def initialize(
+          @jsonrpc : String,
+          @method : String,
+          @params : Param = nil,
+          @req_id : String|Int32? = nil
         )
-        @method = method
-        @params = params
-        @id = id
+        raise InvalidRequest.new unless (
+          @jsonrpc == ::JSON::RPC::VERSION &&
+          @method.is_a?(String)
+        )
       end
 
-      # Parses a request from an opaque string and returns a new `Request`
-      #
-      def self.parse(opaque : String)
-        data = JSON.parse_raw opaque
-        new data["jsonrpc"], data["method"], data["params"]?, data["id"]?
-      end
-
-      # Turn the request into JSON `String`
-      #
-      def to_json(*args) : String
-        j = {} of String => Type
-        j["jsonrpc"] = JSON::RPC::VERSION
-        j["method"] = @method
-        j["method"] = @id unless @id.nil?
-        j["params"] = @params unless @params.nil?
-        j.to_json(*args)
+      def self.new(json : String)
+        parser = JSON::PullParser.new(json)
+        new(parser)
       end
 
     end
