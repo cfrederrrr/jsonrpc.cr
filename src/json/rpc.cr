@@ -10,7 +10,7 @@ module JSON
     # A String specifying the version of the JSON-RPC protocol.
     # MUST be exactly "2.0"
     #
-    VERSION = "2.0"
+    VERSION2 = "2.0"
 
   end
 end

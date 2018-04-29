@@ -19,7 +19,7 @@ module JSON
       getter id : String|Int32?
 
       ::JSON.mapping(
-        jsonrpc: {type: String, default: ::JSON::RPC::VERSION},
+        jsonrpc: {type: String, default: ::JSON::RPC::VERSION2},
         result: {type: Any, nilable: true},
         error: {type: Error, nilable: true},
         id: {type: String|Int32?, nilable: true, emit_null: true}
@@ -37,14 +37,14 @@ module JSON
           @result : Any,
           @id : String|Int32? = nil
         )
-        @jsonrpc = JSON::RPC::VERSION
+        @jsonrpc = JSON::RPC::VERSION2
       end
 
       def initialize(
           @error : Error,
           @id : String|Int32? = nil
         )
-        @jsonrpc = ::JSON::RPC::VERSION
+        @jsonrpc = ::JSON::RPC::VERSION2
       end
 
       def initialize(@id : String|Int32? = nil)

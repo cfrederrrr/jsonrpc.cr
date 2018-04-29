@@ -26,14 +26,8 @@ module JSON
       ::JSON.mapping(
         jsonrpc: String,
         method: String,
-        params: {
-          type: Params,
-          nilable: true
-        },
-        id: {
-          type: String|Int32?,
-          nilable: true
-        }
+        params: {type: Params, nilable: true},
+        id: {type: String|Int32?, nilable: true}
       )
 
       # Convenience overload for building `Request` without instantiating
@@ -44,15 +38,11 @@ module JSON
       end
 
       def initialize(
-          @jsonrpc : String,
           @method : String,
           @params : Params = nil,
           @id : String|Int32? = nil
         )
-        raise InvalidRequest.new unless (
-          @jsonrpc == ::JSON::RPC::VERSION &&
-          @method.is_a?(String)
-        )
+        @jsonrpc = ::JSON::RPC::VERSION2
       end
 
     end

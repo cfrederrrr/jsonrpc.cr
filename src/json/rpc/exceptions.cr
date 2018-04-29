@@ -8,6 +8,7 @@ module JSON
     #
     class Error; end
 
+
     class InvalidRequest < Error
       ::JSON.mapping(
         message: {type: String?, default: "invalid-request", setter: false},
@@ -15,8 +16,10 @@ module JSON
         data: {type: String?, nilable: true, default: nil}
       )
 
-      # Used serverside to generate `InvalidRequest`.
-      # Should not be used clientside.
+      # Used serverside to generate `InvalidRequest`. Some notes:
+      # - Should not be used clientside.
+      # - `data` will be visible to the client - do not include information
+      #   not relevant from the client's perspective here
       #
       def initialize(@data : String? = nil)
         @message = "invalid-request"
@@ -31,8 +34,10 @@ module JSON
         data: {type: String?, nilable: true, default: nil}
       )
 
-      # Used serverside to generate `MethodNotFound`.
-      # Should not be used clientside.
+      # Used serverside to generate `MethodNotFound`. Some notes:
+      # - Should not be used clientside.
+      # - `data` will be visible to the client - do not include information
+      #   not relevant from the client's perspective here
       #
       def initialize(@data : String? = nil)
         @message = "method-not-found"
@@ -47,8 +52,10 @@ module JSON
         data: {type: String?, nilable: true, default: nil}
       )
 
-      # Used serverside to generate `InvalidParams`.
-      # Should not be used clientside.
+      # Used serverside to generate `InvalidParams`. Some notes:
+      # - Should not be used clientside.
+      # - `data` will be visible to the client - do not include information
+      #   not relevant from the client's perspective here
       #
       def initialize(@data : String? = nil)
         @message = "invalid-params"
@@ -63,8 +70,11 @@ module JSON
         data: {type: String?, nilable: true,default: nil}
       )
 
-      # Used serverside to generate `InternalError`.
-      # Should not be used clientside.
+      # Used serverside to generate `InternalError`. Some notes:
+      # - Should not be used clientside.
+      # - `data` will be visible to the client - do not include information
+      #   not relevant from the client's perspective here. `InternalError`
+      #   should almost never include data, but it is not prohibited.
       #
       def initialize(@data : String? = nil)
         @message = "internal-error"
@@ -79,8 +89,10 @@ module JSON
         data: {type: String?, nilable: true, default: nil}
       )
 
-      # Used serverside to generate `ParseError`.
-      # Should not be used clientside.
+      # Used serverside to generate `ParseError`. Some notes:
+      # - Should not be used clientside.
+      # - `data` will be visible to the client - do not include information
+      #   not relevant from the client's perspective here
       #
       def initialize(@data : String? = nil)
         @message = "parse-error"
