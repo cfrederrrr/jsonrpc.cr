@@ -3,72 +3,68 @@ module JSON
 
     class Response
 
+      # JSON RPC version indicator.
+      # Must be exactly `"2.0"` according to spec.
+      getter jsonrpc : String
+
       # This key is included if the method ran successfully. It is excluded if
       # there was an error of any kind.
       getter result : Any
 
       # This key is included if the method did not run successfully. It is
-      # excluded if there was no error of any kind.
+      # excluded if the method was enacted successfully.
       getter error : Error?
 
       # Response has to include the same `@id` as its corresponding `Request`
       getter id : String|Int32?
 
       ::JSON.mapping(
-        jsonrpc: String,
-        result: {
-          type: Any,
-          nilable: true
-        },
-        error: {
-          type: Error,
-          nilable: true
-        },
-        id: {
-          type: String|Int32?,
-          nilable: true,
-          emite_null: true
-        }
+        jsonrpc: {type: String, default: ::JSON::RPC::VERSION},
+        result: {type: Any, nilable: true},
+        error: {type: Error, nilable: true},
+        id: {type: String|Int32?, nilable: true, emit_null: true}
       )
 
-      def initialize(
-          @jsonrpc : String,
-          @error : Error,
-          @id : String|Int32? = nil
-        )
+      # Convenience overload for building `Request` without instantiating
+      # a `JSON::PullParser` yourself - you can just use the incoming data
+      #
+      def self.new(json : String)
+        parser = ::JSON::PullParser.new(json)
+        new(parser)
       end
 
       def initialize(
-          @jsonrpc : String,
           @result : Any,
           @id : String|Int32? = nil
         )
+        @jsonrpc = JSON::RPC::VERSION
       end
 
-      # This is basically the ultimate method to use when sending the
-      # response back to the client. It will never raise an error, ensuring
-      # the contract between server and client. It does this while still
-      # allowing the server to raise and capture errors for logging
-      #
-      def to_json(builder : JSON::Builder)
-        builder.object do
-          builder.field("jsonrpc", JSON::RPC::VERSION)
-          builder.field("id", @id) unless @id.nil?
+      def initialize(
+          @error : Error,
+          @id : String|Int32? = nil
+        )
+        @jsonrpc = ::JSON::RPC::VERSION
+      end
 
-          unless @error.nil? || @result.nil?
-            builder.field("error", InternalError.new.to_json builder)
-            return builder.end_object
-          end
+      def initialize(@id : String|Int32? = nil)
+        @result = nil
+        @error = nil
+      end
 
-          case
-          when @result
-            builder.field("result", @result.to_json(builder))
-          when @error
-            builder.field("error", @error.to_json(builder))
-          else
-            message = "response did not have a result or error"
-            builder.field("error", InternalError.new(message).to_json(builder))
-          end
+      def result=(res : Any)
+        if @result.nil? && @error.nil?
+          @result = res
+        else
+          @error = InternalError.new
+        end
+      end
+
+      def error=(err : Error)
+        if @result.nil? && @error.nil?
+          @error = err
+        else
+          @error = InternalError.new
         end
       end
 
