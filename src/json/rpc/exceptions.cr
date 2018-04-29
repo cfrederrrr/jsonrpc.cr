@@ -1,52 +1,71 @@
+require "json"
+
 module JSON
   module RPC
 
-    class GenericError < Exception
-
-      getter data : String?
-
-      def to_json(json : JSON::Builder)
-        json.object do
-          json.field("code", @code)
-          json.field("message", @message)
-          json.field("data", @data) unless @data.nil?
-        end
-      end
+    class Error
     end
 
-    class InvalidRequest < GenericError
-      def initialize(@data : String? = nil, @cause : Exception? = nil)
+    class InvalidRequest < Error
+      JSON.mapping(
+        message: {type: String?, default: "invalid-request", setter: false},
+        code: {type: Int32, default: -32600, setter: false},
+        data: {type: String?, nilable: true, default: nil}
+      )
+
+      def initialize(@data : String? = nil)
         @message = "invalid-request"
         @code = -32600
       end
     end
 
-    class MethodNotFound < GenericError
-      def initialize(@data : String? = nil, @cause : Exception? = nil)
+    class MethodNotFound < Error
+      JSON.mapping(
+        message: {type: String?, default: "method-not-found", setter: false},
+        code: {type: Int32, default: -32601, setter: false},
+        data: {type: String?, nilable: true, default: nil}
+      )
+
+      def initialize(@data : String? = nil)
         @message = "method-not-found"
         @code = -32601
       end
     end
 
-    class InvalidParams < GenericError
-      def initialize(@data : String? = nil, @cause : Exception? = nil)
+    class InvalidParams < Error
+      JSON.mapping(
+        message: {type: String?, default: "invalid-params", setter: false},
+        code: {type: Int32, default: -32602, setter: false},
+        data: {type: String?, nilable: true, default: nil}
+      )
+
+      def initialize(@data : String? = nil)
         @message = "invalid-params"
         @code = -32602
       end
     end
 
-    class InternalError < GenericError
-      getter data : String?
-      getter code : Int32
+    class InternalError < Error
+      JSON.mapping(
+        message: {type: String?, default: "internal-error", setter: false},
+        code: {type: Int32, default: -32603, setter: false},
+        data: {type: String?, nilable: true,default: nil}
+      )
 
-      def initialize(@data : String? = nil, @cause : Exception? = nil)
+      def initialize(@data : String? = nil)
         @message = "internal-error"
         @code = -32603
       end
     end
 
-    class ParseError < GenericError
-      def initialize(@data : String? = nil, @cause : Exception? = nil)
+    class ParseError < Error
+      JSON.mapping(
+        message: {type: String?, default: "parse-error", setter: false},
+        code: {type: Int32, default: -32700, setter: false},
+        data: {type: String?, nilable: true, default: nil}
+      )
+
+      def initialize(@data : String? = nil)
         @message = "parse-error"
         @code = -32700
       end

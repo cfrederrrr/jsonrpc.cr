@@ -19,7 +19,13 @@ module JSON
       getter response : Response
       def initialize(@request, @response); end
 
-      def invoke()
+      def invoke
+        begin
+
+        rescue err : JSON::RPC::Error
+          @response = Response.new()
+        end
+      end
     end
 
   end

@@ -20,27 +20,26 @@ module JSON
       #
       getter :req_id
 
-      alias Param = Array(Type)|Hash(String, Type)?
+      alias Params = Array(Any)|Hash(String,Any)?
 
       ::JSON.mapping(
         jsonrpc: String,
         method: String,
         params: {
-          type: Param,
+          type: Params,
           nilable: true
         },
-        req_id: {
+        id: {
           type: String|Int32?,
-          nilable: true,
-          key: "id"
+          nilable: true
         }
       )
 
       def initialize(
           @jsonrpc : String,
           @method : String,
-          @params : Param = nil,
-          @req_id : String|Int32? = nil
+          @params : Params = nil,
+          @id : String|Int32? = nil
         )
         raise InvalidRequest.new unless (
           @jsonrpc == ::JSON::RPC::VERSION &&
@@ -48,6 +47,8 @@ module JSON
         )
       end
 
+      # Convenience overload for building {Request} without instantiating
+      # a {JSON::PullParser} yourself - you can just use the incoming data
       def self.new(json : String)
         parser = JSON::PullParser.new(json)
         new(parser)
