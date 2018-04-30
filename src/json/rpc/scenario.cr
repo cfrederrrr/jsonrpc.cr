@@ -7,27 +7,50 @@ module JSON
 
     class Scenario
 
-      getter request : Request
-      getter response : Response
-      getter id : String|Int32?
-      getter fulfilled : Bool
+      # The request object of the scenario. Cannot be altered after
+      # initialization
+      getter request : Request?
 
-      def initialize(@request : Request, @response : Response)
-        @fulfilled = false
+      # The response object of the scenario. Can be nil, and can be altered
+      # after initialization.
+      getter response : Response?
 
-        begin
-          @id = @request.id
-          @response.id = @id
-        rescue
-          m = %<"id" either couldn't be found or was malformed>
-          @response.error = InvalidRequest.new m
+      def response=(res : Response)
+        if @wants_response
+          @response = res
           @fulfilled = true
+        else
+          raise %<response given for notification request "#{@id}">
         end
       end
 
-      def initialize()
+      getter id : String|Int32?
+
+      def initialize(@request : Request)
+        @id = @request.id
+        @wants_response = !!@id
+        @response = nil
       end
 
+      def initialize(req_str : String, &block)
+        begin
+          @request = Request.new(req_str)
+          @id = @request.id
+          @wants_response = !!@id
+        rescue ::JSON::ParseError
+          @request, @id, @wants_response = nil, nil, false
+          @response = Response.new(::JSON::RPC::ParseError.new)
+          return
+        end
+
+        @response = Response.new(@id)
+
+        begin
+          @response.result = yield @request.params
+        rescue
+          @response.error = InternalError.new
+        end
+      end
     end
 
   end

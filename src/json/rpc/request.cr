@@ -22,7 +22,6 @@ module JSON
       #
       getter id : String|Int32?
 
-
       ::JSON.mapping(
         jsonrpc: String,
         method: String,
@@ -42,7 +41,7 @@ module JSON
           @params : Params = nil,
           @id : String|Int32? = nil
         )
-        @jsonrpc = ::JSON::RPC::VERSION2
+        @jsonrpc = ::JSON::RPC::RPCVERSION
       end
 
     end
