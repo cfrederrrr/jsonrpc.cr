@@ -3,7 +3,7 @@ module JSON
 
     class Request
 
-      alias Params = Array(Any)|Hash(String,Any)?
+      alias Params = Array(JSON::Type)|Hash(String,JSON::Type)?
 
       # A `String` specifying the RPC method to be invoked.
       #

@@ -26,12 +26,14 @@ module JSON
 
       getter id : String|Int32?
 
+      # Clientside implementation
       def initialize(@request : Request)
         @id = @request.id
         @wants_response = !!@id
         @response = nil
       end
 
+      # Server implementation
       def initialize(req_str : String, &block)
         begin
           @request = Request.new(req_str)

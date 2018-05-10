@@ -9,7 +9,7 @@ module JSON
 
       # This key is included if the method ran successfully. It is excluded if
       # there was an error of any kind.
-      getter result : Any
+      getter result : ::JSON::Type
 
       # This key is included if the method did not run successfully. It is
       # excluded if the method was enacted successfully.
@@ -20,7 +20,7 @@ module JSON
 
       ::JSON.mapping(
         jsonrpc: {type: String, default: ::JSON::RPC::RPCVERSION},
-        result: {type: Any, nilable: true},
+        result: {type: ::JSON::Type, nilable: true},
         error: {type: Error, nilable: true},
         id: {type: String|Int32?, nilable: true, emit_null: true}
       )
@@ -34,11 +34,11 @@ module JSON
       end
 
       def initialize(
-          @result : Any,
+          @result : ::JSON::Type,
           @id : String|Int32? = nil
         )
         @error = nil
-        @jsonrpc = JSON::RPC::RPCVERSION
+        @jsonrpc = ::JSON::RPC::RPCVERSION
       end
 
       def initialize(
@@ -52,10 +52,10 @@ module JSON
       def initialize(@id : String|Int32? = nil)
         @result = nil
         @error = nil
-        @jsonrpc = JSON::RPC::RPCVERSION
+        @jsonrpc = ::JSON::RPC::RPCVERSION
       end
 
-      def result=(res : Any)
+      def result=(res : ::JSON::Type)
         if @result.nil? && @error.nil?
           @result = res
         else
