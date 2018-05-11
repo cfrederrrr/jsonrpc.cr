@@ -7,9 +7,9 @@ module JSON
     # with `JSON::Builder`
     #
     # According to
-    # [www.jsonrpc.org/specification#request_object](JSONRPC 2.0 specification),
-    # the params key should be any "structured value that holds the parameter
-    # values to be used during the invocation of the method"
+    # [https://www.jsonrpc.org/specification#request_object](JSONRPC 2.0),
+    # specification the params key should be any "structured value that holds
+    # the parameter values to be used during the invocation of the method"
     #
     # If the method you are invoking per `@method` is one which expects
     # positional parameters, `Params` should build to a JSON array
@@ -58,11 +58,15 @@ module JSON
     end
 
     # `Request` object to be sent to the JSONRPC server
+    #
     # The non-generic version of `Request` sends a request with no
     # parameters
     #
+    # If your request should have parameters, see `Request(Params)`. 
     # This is mainly here just because writing `Request(Nil).new` is
-    # awkward and ugly. With `Request`, you provide the method name as a
+    # awkward and ugly.
+    #
+    #  With `Request`, you provide the method name as a
     # `String` and an optional `id` and the rest is handled for you
     class Request
 
