@@ -5,7 +5,7 @@ require "./json/response"
 module JSON
   module RPC
 
-    class Scenario
+    class Scenario(Params, Result)
 
       # The request object of the scenario. Cannot be altered after
       # initialization
