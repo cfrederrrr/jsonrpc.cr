@@ -1,7 +1,7 @@
 module JSON
   module RPC
 
-    class MethodHandler
+    module Handler
 
       # `method` tells the `Handler` how to access the method it refers to
       macro method(name, params = nil, form = nil)

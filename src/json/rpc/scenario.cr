@@ -9,13 +9,13 @@ module JSON
 
       # The request object of the scenario. Cannot be altered after
       # initialization
-      getter request : Request?
+      getter request : Request|Request(Params)?
 
       # The response object of the scenario. Can be nil, and can be altered
       # after initialization.
-      getter response : Response?
+      getter response : Response(Result)?
 
-      def response=(res : Response)
+      def response=(res : Response(Result))
         if @wants_response
           @response = res
           @fulfilled = true
@@ -27,7 +27,7 @@ module JSON
       getter id : String|Int32?
 
       # Clientside implementation
-      def initialize(@request : Request)
+      def initialize(@request : Request|Request(Params))
         @id = @request.id
         @wants_response = !!@id
         @response = nil
