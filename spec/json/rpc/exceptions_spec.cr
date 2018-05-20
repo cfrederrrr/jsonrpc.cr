@@ -1,11 +1,11 @@
 require "../../spec_helper"
 
-describe "JSON::RPC::Error" do
+describe "JSONRPC::Error" do
 end
 
-describe "JSON::RPC::InvalidRequest" do
+describe "JSONRPC::InvalidRequest" do
   data = "internal error occurred!"
-  example = JSON::RPC::InvalidRequest.new data
+  example = JSONRPC::InvalidRequest.new data
 
   describe "#code" do
     it "should always be -32600" do
@@ -26,14 +26,14 @@ describe "JSON::RPC::InvalidRequest" do
       end
 
       describe "nil" do
-        JSON::RPC::InvalidRequest.new.data.should be_nil
+        JSONRPC::InvalidRequest.new.data.should be_nil
       end
     end
   end
 
   describe ".from_json" do
     it "pulls from json" do
-      _example = JSON::RPC::InvalidRequest.from_json(example.to_json)
+      _example = JSONRPC::InvalidRequest.from_json(example.to_json)
       example.code.should eq(_example.code)
       example.message.should eq(_example.message)
       example.data.should eq(_example.data)
@@ -41,8 +41,8 @@ describe "JSON::RPC::InvalidRequest" do
   end
 end
 
-describe "JSON::RPC::InvalidRequest" do
-  example = JSON::RPC::MethodNotFound.new "method is not found!"
+describe "JSONRPC::InvalidRequest" do
+  example = JSONRPC::MethodNotFound.new "method is not found!"
 
   describe "any instance" do
     it "code should always be -32601" do
@@ -60,7 +60,7 @@ describe "JSON::RPC::InvalidRequest" do
 
   describe ".from_json" do
     it "pulls from json" do
-      _example = JSON::RPC::InvalidRequest.from_json(example.to_json)
+      _example = JSONRPC::InvalidRequest.from_json(example.to_json)
       example.code.should eq(_example.code)
       example.message.should eq(_example.message)
       example.data.should eq(_example.data)
