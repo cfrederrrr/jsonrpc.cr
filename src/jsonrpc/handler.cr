@@ -3,26 +3,18 @@ require "json"
 require "./request"
 require "./response"
 
-module JSONRPC
+abstract class JSONRPC::MethodHandler
+  abstract def handle_request(req : Request(JSON::Any?))
 
-  class Handler
-
-    def methods
-      @methods ||= {} of String => Scenario -> _
+  def handle(json : String)
+    begin
+      request = Request(JSON::Any?).new(JSON::PullParser.new(json))
+      result = handle_request(request)
+      return Response(JSON::Any?).new(result, request.id)
+    rescue err : JSON::ParseError
+      return Response(JSON::Any?).new(JSONRPC::ParseError.new, request.id)
+    rescue err : Exception
+      return Response(JSON::Any?).new(JSONRPC::InternalError.new, request.id)
     end
-
-    def method(name : String, &block : Scenario ->)
-      methods[name] = ->(scenario : Scenario) do
-
-      end
-    end
-
-    macro method(name, param_type, result_type, &block)
-      %mthd = {} of String => Scenario({{param_type}}, {{result_type}})
-      @@methods ||= %mthd
-      @@methods = @@methods.merge %mthd
-    end
-
   end
-
 end

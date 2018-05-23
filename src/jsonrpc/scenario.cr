@@ -17,7 +17,7 @@ module JSONRPC
         @response = res
         @fulfilled = true
       else
-        raise %<response given for notification request "#{@id}">
+        raise %<response created for notification request "#{@id}">
       end
     end
 
