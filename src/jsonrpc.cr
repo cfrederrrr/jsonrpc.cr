@@ -9,4 +9,7 @@ module JSONRPC
   #
   RPCVERSION = "2.0"
 
+  HANDLER = Handler.new
+  forward_missing_to HANDLER
+
 end
