@@ -15,7 +15,7 @@ require "json"
 # Otherwise it should build to a JSON object
 #
 # The server implementation always uses Request(JSON::Any)
-module JSONRPC::Request(P)
+class JSONRPC::Request(P)
 
   # A `String` specifying the RPC method to be invoked.
   getter method : String
@@ -46,5 +46,5 @@ module JSONRPC::Request(P)
   def initialize(@method, @params = nil, @id = nil)
     @jsonrpc = JSONRPC::RPCVERSION
   end
-  
+
 end

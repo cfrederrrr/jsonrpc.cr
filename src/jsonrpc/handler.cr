@@ -5,10 +5,10 @@ require "./response"
 
 class JSONRPC::Handler
 
-  @methods = {} of String => Request(JSON::Any) -> String
+  @methods = {} of String => Method
 
-  def register_method(name : String, *args : String, &block : JSON::Any -> _)
-    @methods[name] = Method.new *args, &block
+  def register_method(name : String, *params : String, &block : JSON::Any -> _)
+    @methods[name] = Method.new *params, &block
   end
 
   def handle(json : String)

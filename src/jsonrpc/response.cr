@@ -1,6 +1,6 @@
 require "json"
 
-module JSONRPC::Response(R)
+class JSONRPC::Response(R)
 
   # JSON RPC version indicator.
   # Must be exactly `"2.0"` according to spec.

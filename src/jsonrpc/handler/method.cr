@@ -1,15 +1,21 @@
 class JSONRPC::Handler::Method
-  getter process : Proc(String, String)
-  getter params : Array(String)
+  getter form : Symbol = :none
+  getter params : Array(String)|Int32?
+  getter operation : Proc(String, String)
 
-  def initialize(*params, &blk)
-    @params = params.to_a
-    @process = ->(req : String) do
+  def initialize(@params : Array(String)|Int32?, &block)
+    @form = case @params
+      when Array  then :named
+      when Int    then :positional
+      when Nil    then :none
+      end
+
+    @operation = ->(req : String) do
       begin
         request = Request(JSON::Any).new(JSON::PullParser.new(req))
         validate_params(request.params)
-        result = block.call(request.params.as(JSON::Any))
-        Response(typeof(result)).new(result, request.id).to_json
+        result = block.call(request.params)
+        Response(typeof(result)).new(result, request.id)
       rescue error : JSONRPC::Error
         Response(Nil).new(error, request.id)
       rescue perr : JSON::ParseError
@@ -17,11 +23,24 @@ class JSONRPC::Handler::Method
       rescue exc : Exception
         Response(Nil).new(InternalError.new, request.id)
       end
+        .to_json
     end
   end
 
-  private def validate_params(request)
-    @params == request.params
+  def call(req : String)
+
   end
+
+  private def validate_params(parameters)
+    case @form
+    when :positional
+      @params.each{ |a| raise InvalidRequest.new unless parameters[a]? }
+    when :named
+      raise InvalidRequest.new unless @params.size == parameters.size
+    when :none
+      raise InvalidRequest.new if parameters
+    end
+  end
+
 
 end
