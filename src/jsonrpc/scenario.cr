@@ -24,7 +24,7 @@ module JSONRPC
     getter id : String|Int32?
 
     # Clientside implementation
-    def initialize(@request : Request|Request(Params))
+    def initialize(@request : Request(Params))
       @id = @request.id
       @wants_response = !!@id
       @response = nil

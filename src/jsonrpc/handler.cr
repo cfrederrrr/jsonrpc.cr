@@ -9,11 +9,6 @@ class JSONRPC::Handler
 
   def register_method(name : String, *args : String, &block : JSON::Any -> _)
     @methods[name] = Method.new *args, &block
-    @methods[name] = ->(req : Request(JSON::Any)) do
-      result = block.call(req.params.as(JSON::Any))
-      Response(typeof(result)).new(result, req.id).to_json
-    end
-    @methods[name] = {"args" => a_keys, "proc" => }
   end
 
   def handle(json : String)

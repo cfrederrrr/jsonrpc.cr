@@ -8,7 +8,7 @@ abstract class JSONRPC::Error < ::Exception
   abstract def to_json(io : IO)
 end
 
-# Exception indicating that the JSON sent is not a valid `Request(P)` object.
+# Exception indicating that the JSON sent is not a valid `Request` object.
 class JSONRPC::InvalidRequest < JSONRPC::Error
   JSON.mapping(
     message: {type: String?, default: "invalid-request", setter: false},
@@ -47,8 +47,8 @@ class JSONRPC::MethodNotFound < JSONRPC::Error
   end
 end
 
-# Exception indicating that the `Request(P)#params` provided for the named
-# `Request(P)#method` are somehow invalid
+# Exception indicating that the `Request#params` provided for the named
+# `Request#method` are somehow invalid
 class JSONRPC::InvalidParams < JSONRPC::Error
   JSON.mapping(
     message: {type: String?, default: "invalid-params", setter: false},
@@ -68,7 +68,7 @@ class JSONRPC::InvalidParams < JSONRPC::Error
 end
 
 # Exception indicating that the RPC server has suffered an error internally.
-# That is, irrespective of the `Request(P)` object received by the server.
+# That is, irrespective of the `Request` object received by the server.
 class JSONRPC::InternalError < JSONRPC::Error
   JSON.mapping(
     message: {type: String?, default: "internal-error", setter: false},
@@ -88,7 +88,7 @@ class JSONRPC::InternalError < JSONRPC::Error
   end
 end
 
-# Exception indicating that the `Request(P)` was not valid JSON, or that
+# Exception indicating that the `Request` was not valid JSON, or that
 # an error occurred on the server during parsing
 class JSONRPC::ParseError < JSONRPC::Error
   JSON.mapping(
