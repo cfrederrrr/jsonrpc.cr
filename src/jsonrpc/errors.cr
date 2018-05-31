@@ -88,9 +88,8 @@ class JSONRPC::InternalError < JSONRPC::Error
   end
 end
 
-# From [JSONRPC 2.0 specification](http://www.jsonrpc.org/specification):
-# > Invalid JSON was received by the server. An error occurred on the server
-# > while parsing the JSON text.
+# Exception indicating that the `Request(P)` was not valid JSON, or that
+# an error occurred on the server during parsing
 class JSONRPC::ParseError < JSONRPC::Error
   JSON.mapping(
     message: {type: String?, default: "parse-error", setter: false},
@@ -108,13 +107,3 @@ class JSONRPC::ParseError < JSONRPC::Error
     @code = -32700
   end
 end
-
-# Copyright (C) 2007-2010 by the JSON-RPC Working Group
-#
-# This document and translations of it may be used to implement JSON-RPC,
-# it may be copied and furnished to others, and derivative works that comment
-# on or otherwise explain it or assist in its implementation may be prepared,
-# copied, published and distributed, in whole or in part, without restriction
-# of any kind, provided that the above copyright notice and this paragraph are
-# included on all such copies and derivative works. However, this document
-# itself may not bemodified in any way.

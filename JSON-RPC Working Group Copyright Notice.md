@@ -1,4 +1,4 @@
-This code is neither written nor maintained or affiliated in any way with *The JSON-RPC Working Group* or Matt Morley (owner of [this site](http://www.jsonrpc.org/specification))
+This code is neither written nor maintained or affiliated in any way with *The JSON-RPC Working Group* or *Matt Morley (owner of [this site](http://www.jsonrpc.org/specification))*
 However, the code in this repository implements [JSONRPC 2.0 specification](http://www.jsonrpc.org/specification), and quotes from the same in some of the documentation.
 
 > Copyright (C) 2007-2010 by the JSON-RPC Working Group
