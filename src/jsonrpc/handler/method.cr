@@ -10,24 +10,24 @@ class JSONRPC::Handler::Method
       when Nil    then :none
       end
 
-    @operation = ->(req : String) do
+    @operation = ->(request : Request(JSON::Any?)) do
       begin
-        request = Request(JSON::Any).new(JSON::PullParser.new(req))
         validate_params(request.params)
         result = block.call(request.params)
         Response(typeof(result)).new(result, request.id)
-      rescue error : JSONRPC::Error
-        Response(Nil).new(error, request.id)
-      rescue perr : JSON::ParseError
-        Response(Nil).new(JSONRPC::ParseError.new)
-      rescue exc : Exception
+
+      rescue err : JSONRPC::Error
+        Response(Nil).new(err, request.id)
+
+      rescue Exception
         Response(Nil).new(InternalError.new, request.id)
+
       end
         .to_json
     end
   end
 
-  def call(req : String)
+  def call(req : Request(JSON::Any?))
 
   end
 
@@ -40,6 +40,8 @@ class JSONRPC::Handler::Method
     when :none
       raise InvalidRequest.new if parameters
     end
+
+    true
   end
 
 
