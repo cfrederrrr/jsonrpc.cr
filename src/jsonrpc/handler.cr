@@ -7,7 +7,7 @@ class JSONRPC::Handler
 
   @methods = {} of String => Method
 
-  def register_method(name : String, *params : String, &block : JSON::Any -> _)
+  def register_method(name : String, params : Array(String), &block : JSON::Any -> _)
     @methods[name] = Method.new *params, &block
   end
 

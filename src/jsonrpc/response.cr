@@ -1,6 +1,7 @@
 require "json"
 
 class JSONRPC::Response(R)
+  alias RID = String | Int32 | Nil
 
   # JSON RPC version indicator.
   # Must be exactly `"2.0"` according to spec.
@@ -18,32 +19,41 @@ class JSONRPC::Response(R)
   getter error : Error?
 
   # Response has to include the same `@id` as its corresponding `Request`
-  getter id : String|Int32?
+  getter id : RID
 
   JSON.mapping(
-    jsonrpc: {type: String, default: JSONRPC::RPCVERSION},
-    result: {type: R?, nilable: true, emit_null: false},
-    error: {type: Error?, nilable: true, emit_null: false},
-    id: {type: String|Int32?, nilable: true, emit_null: true}
+    jsonrpc: {
+      type: String,
+      default: JSONRPC::RPCVERSION
+    },
+    result: {
+      type: R?,
+      nilable: true,
+      emit_null: false
+    },
+    error: {
+      type: Error?,
+      nilable: true,
+      emit_null: false
+    },
+    id: {
+      type: RID,
+      nilable: true,
+      emit_null: true
+    }
   )
 
-  def initialize(
-      @result : R,
-      @id : String|Int32? = nil
-    )
+  def initialize(@result : R, @id : RID = nil)
     @error = nil
     @jsonrpc = JSONRPC::RPCVERSION
   end
 
-  def initialize(
-      @error : Error,
-      @id : String|Int32? = nil
-    )
+  def initialize(@error : Error, @id : RID = nil)
     @result = nil
     @jsonrpc = JSONRPC::RPCVERSION
   end
 
-  def initialize(@id : String|Int32? = nil)
+  def initialize(@id : RID = nil)
     @result = nil
     @error = nil
     @jsonrpc = JSONRPC::RPCVERSION

@@ -3,10 +3,10 @@ class JSONRPC::Handler::Method
   @params : Array(String)|Int32?
   @operation : Proc(String, String)
 
-  def initialize(@params : Array(String)|Int32?, &block)
+  def initialize(@params : Array(String)|Int32? = nil, &block)
     @operation = ->(request : Request(JSON::Any?), builder : JSON::Builder) do
       begin
-        validate_params(request.params)
+        invalid_params?(request.params)
         result = block.call(request.params)
         Response(typeof(result)).new(result, request.id)
 
@@ -25,14 +25,14 @@ class JSONRPC::Handler::Method
     @operation.call(req, builder)
   end
 
-  private def validate_params(parameters) : Nil
+  private def invalid_params?(parameters) : Nil
     case @params
-    when Int
-      @params.each{ |a| raise InvalidRequest.new unless parameters[a]? }
     when Array
-      raise InvalidRequest.new unless @params.size == parameters.size
+      @params.each{ |a| raise InvalidParams.new unless parameters[a]? }
+    when Int
+      raise InvalidParams.new unless @params.size == parameters.size
     when Nil
-      raise InvalidRequest.new if parameters
+      raise InvalidParams.new if parameters
     end
   end
 

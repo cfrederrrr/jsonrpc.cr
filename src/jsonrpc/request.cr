@@ -16,6 +16,7 @@ require "json"
 #
 # The server implementation always uses Request(JSON::Any)
 class JSONRPC::Request(P)
+  alias RID = String | Int32 | Nil
 
   # A `String` specifying the RPC method to be invoked.
   getter method : String
@@ -29,7 +30,7 @@ class JSONRPC::Request(P)
   # An identifier established by the client. If `nil` or excluded, then
   # the client does not expect a response - this is known as a
   # "notification" according to JSON RPC 2.0 specification
-  getter id : String|Int32?
+  getter id : RID
 
   # A `String` indicating the JSONRPC version
   getter jsonrpc : String
@@ -37,13 +38,21 @@ class JSONRPC::Request(P)
   JSON.mapping(
     jsonrpc: String,
     method: String,
-    params: {type: P, nilable: true, emit_null: false},
-    id: {type: String|Int32?, nilable: true, emit_null: false}
+    params: {
+      type: P,
+      nilable: true,
+      emit_null: false
+    },
+    id: {
+      type: RID,
+      nilable: true,
+      emit_null: false
+    }
   )
 
   # Create a new `Request(P)` with direct arguments,
   # rather than with a JSON string
-  def initialize(@method, @params = nil, @id = nil)
+  def initialize(@method, @params : P = nil, @id : RID = nil)
     @jsonrpc = JSONRPC::RPCVERSION
   end
 
