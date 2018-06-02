@@ -27,12 +27,12 @@ class JSONRPC::Handler
     end
   end
 
-  private def handle(parser : JSON::PullParser, builder : JSON::Builder) : Nil
+  def handle(parser : JSON::PullParser, builder : JSON::Builder) : Nil
     request = Request(JSON::Any).new(parser)
     handle_request(request, builder)
   end
 
-  private def batch(parser : JSON::PullParser, builder : JSON::Builder) : Nil
+  def batch(parser : JSON::PullParser, builder : JSON::Builder) : Nil
     b = [] of Request(JSON::Any)
     parser.read_array do
       b << Request(JSON::Any).new(parser)
