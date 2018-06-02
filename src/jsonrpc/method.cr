@@ -1,28 +1,25 @@
-class JSONRPC::Handler::Method
+class JSONRPC::Method
 
   @params : Array(String)|Int32?
-  @operation : Proc(String, String)
+  @action : Proc(String, String)
 
   def initialize(@params : Array(String)|Int32? = nil, &block)
-    @operation = ->(request : Request(JSON::Any?), builder : JSON::Builder) do
+    @action = ->(request : Request(JSON::Any?), builder : JSON::Builder) do
       begin
-        invalid_params?(request.params)
+        invalid_params? request.params
         result = block.call(request.params)
         Response(typeof(result)).new(result, request.id)
-
       rescue err : JSONRPC::Error
         Response(Nil).new(err, request.id)
-
       rescue Exception
         Response(Nil).new(InternalError.new, request.id)
-
       end
         .to_json(builder)
     end
   end
 
   def call(req : Request(JSON::Any?), builder : JSON::Builder)
-    @operation.call(req, builder)
+    @action.call(req, builder)
   end
 
   private def invalid_params?(parameters) : Nil
@@ -35,6 +32,5 @@ class JSONRPC::Handler::Method
       raise InvalidParams.new if parameters
     end
   end
-
 
 end

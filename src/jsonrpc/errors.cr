@@ -1,5 +1,3 @@
-require "json"
-
 # Virtual error type so child classes can be handled the
 # in the same way
 #
