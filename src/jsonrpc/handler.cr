@@ -14,40 +14,50 @@ class JSONRPC::Handler
   def handle(json : String) : String
     parser = JSON::PullParser.new(json)
 
-    JSON.build do |builder|
-      begin
+    begin
+      JSON.build { |builder|
         case parser.kind
-        when :begin_object
-          handle Request(JSON::Any).new(parser), builder
-        when :begin_array
-          builder.array do
-            parser.read_array do
-              handle Request(JSON::Any).new(parser), builder
-            end
-          end
-        else
-          Response(Nil).new(InvalidRequest.new).to_json(builder)
+        when :begin_object then handle parser, builder
+        when :begin_array  then batch  parser, builder
+        else Response(Nil).new(InvalidRequest.new).to_json(builder)
         end
-      rescue JSON::ParseException
-        Response(Nil).new(ParseError.new).to_json(builder)
+      }
+    rescue JSON::ParseException
+      Response(Nil).new(ParseError.new).to_json
+    end
+  end
+
+  private def handle(parser : JSON::PullParser, builder : JSON::Builder) : Nil
+    request = Request(JSON::Any).new(parser)
+    handle_request(request, builder)
+  end
+
+  private def batch(parser : JSON::PullParser, builder : JSON::Builder) : Nil
+    b = [] of Request(JSON::Any)
+    parser.read_array do
+      b << Request(JSON::Any).new(parser)
+    end
+
+    builder.array do
+      b.each do |request|
+        handle_request request, builder
       end
     end
   end
 
-  def handle(request : Request(JSON::Any), builder : JSON::Builder) : Nil
-    if request.jsonrpc != RPCVERSION
+  private def handle_request(req : Request(JSON::Any), builder : JSON::Builder) : Nil
+    if req.jsonrpc != RPCVERSION
       Response(Nil).new(InvalidRequest.new, request.id).to_json(builder)
-      return nil
+      return
     end
 
-    method = @methods[request.name]?
-
+    method = @methods[req.name]?
     if method.nil?
       Response(Nil).new(MethodNotFound.new, request.id).to_json(builder)
-      return nil
+      return
     end
 
     method.call(request, builder)
-    return nil
   end
+
 end
