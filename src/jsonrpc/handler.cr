@@ -14,38 +14,40 @@ class JSONRPC::Handler
   def handle(json : String) : String
     parser = JSON::PullParser.new(json)
 
-    begin
-      case parser.kind
-      when :begin_array
-        batch = [] of Request(JSON::Any)
-        parser.read_array{ batch << Request(JSON::Any).new(parser) }
-        return handle batch
-      when :begin_object
-        request = Request(JSON::Any).new(parser)
-        return handle request
-      else
-        return Response(Nil).new(InvalidRequest.new).to_json
+    JSON.build do |builder|
+      begin
+        case parser.kind
+        when :begin_object
+          handle Request(JSON::Any).new(parser), builder
+        when :begin_array
+          builder.array do
+            parser.read_array do
+              handle Request(JSON::Any).new(parser), builder
+            end
+          end
+        else
+          Response(Nil).new(InvalidRequest.new).to_json(builder)
+        end
+      rescue JSON::ParseException
+        Response(Nil).new(ParseError.new).to_json(builder)
       end
-    rescue JSON::ParseException
-      return Response(Nil).new(ParseError.new) unless request
     end
-
-    handle(request)
   end
 
-  def handle(batch : Array(Request(JSON::Any))) : String
-    response = [] of String
-    batch.each{ |request| response.push(handle request) }
-    "[#{response.join(',')}]"
-  end
-
-  def handle(request : Request(JSON::Any)) : String
-    unless request.jsonrpc == RPCVERSION
-      return Response(Nil).new(InvalidRequest.new, request.id).to_json
+  def handle(request : Request(JSON::Any), builder : JSON::Builder) : Nil
+    if request.jsonrpc != RPCVERSION
+      Response(Nil).new(InvalidRequest.new, request.id).to_json(builder)
+      return nil
     end
-    m = @methods[request.name]?
-    return Response(Nil).new(MethodNotFound.new, request.id).to_json if m.nil?
-    result = m.call(request)
-    return Response(JSON::Any).new(result.as(JSON::Any), request.id)
+
+    method = @methods[request.name]?
+
+    if method.nil?
+      Response(Nil).new(MethodNotFound.new, request.id).to_json(builder)
+      return nil
+    end
+
+    method.call(request, builder)
+    return nil
   end
 end

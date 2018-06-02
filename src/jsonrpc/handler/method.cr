@@ -1,16 +1,10 @@
 class JSONRPC::Handler::Method
-  getter form : Symbol = :none
-  getter params : Array(String)|Int32?
-  getter operation : Proc(String, String)
+
+  @params : Array(String)|Int32?
+  @operation : Proc(String, String)
 
   def initialize(@params : Array(String)|Int32?, &block)
-    @form = case @params
-      when Array  then :named
-      when Int    then :positional
-      when Nil    then :none
-      end
-
-    @operation = ->(request : Request(JSON::Any?)) do
+    @operation = ->(request : Request(JSON::Any?), builder : JSON::Builder) do
       begin
         validate_params(request.params)
         result = block.call(request.params)
@@ -23,25 +17,23 @@ class JSONRPC::Handler::Method
         Response(Nil).new(InternalError.new, request.id)
 
       end
-        .to_json
+        .to_json(builder)
     end
   end
 
-  def call(req : Request(JSON::Any?))
-
+  def call(req : Request(JSON::Any?), builder : JSON::Builder)
+    @operation.call(req, builder)
   end
 
-  private def validate_params(parameters)
-    case @form
-    when :positional
+  private def validate_params(parameters) : Nil
+    case @params
+    when Int
       @params.each{ |a| raise InvalidRequest.new unless parameters[a]? }
-    when :named
+    when Array
       raise InvalidRequest.new unless @params.size == parameters.size
-    when :none
+    when Nil
       raise InvalidRequest.new if parameters
     end
-
-    true
   end
 
 
