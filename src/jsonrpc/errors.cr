@@ -4,6 +4,8 @@
 abstract class JSONRPC::Error < ::Exception
   abstract def to_json
   abstract def to_json(io : IO)
+  def id=(@id : Int32|String) end
+  def id; @id; end
 end
 
 # Exception indicating that the JSON sent is not a valid `Request` object.

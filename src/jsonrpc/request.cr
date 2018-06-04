@@ -36,24 +36,75 @@ class JSONRPC::Request(P)
   getter jsonrpc : String
 
   JSON.mapping(
-    jsonrpc: String,
-    method: String,
+    jsonrpc: {
+      type: String,
+      getter: false,
+      setter: false,
+      default: JSONRPC::RPCVERSION
+    },
+    method: {
+      type: String,
+      getter: false,
+      setter: false
+    },
     params: {
       type: P,
+      getter: false,
+      setter: false,
       nilable: true,
       emit_null: false
     },
     id: {
       type: RID,
+      getter: false,
+      setter: false,
       nilable: true,
       emit_null: false
     }
   )
 
-  # Create a new `Request(P)` with direct arguments,
-  # rather than with a JSON string
-  def initialize(@method, @params : P = nil, @id : RID = nil)
-    @jsonrpc = JSONRPC::RPCVERSION
+  # Clientside can create a new `Request(P)` with direct arguments, rather than with a pullparser
+  #
+  def initialize(@method, @params : P = nil, @id : RID = nil, @jsonrpc = JSONRPC::RPCVERSION)
+    raise InvalidRequest.new("jsonrpc must be '2.0'") unless @jsonrpc == JSONRPC::RPCVERSION
+  end
+
+  def self.new(parser : JSON::PullParser)
+    raise InvalidRequest.new unless parser.kind == :begin_object
+    args = {} of Symbol => String | P | RID | Nil
+    invalid = false
+
+    parser.read_object do |key|
+      case
+      when key == "method"
+        args[:method] = String.new(parser)
+      when key == "id"
+        args[:id] = case parser.kind
+          when :int then Int32.new(parser)
+          when :string then String.new(parser)
+          else
+            invalid = InvalidRequest.new "id must be string or int"
+          end
+      when key == "params"
+        args[:params] = P.new(parser)
+      when key == "jsonrpc"
+        args[:jsonrpc] = String.new(parser)
+      else
+        invalid = InvalidRequest.new "unrecognized member: '#{key}'"
+      end
+    end
+
+    if invalid
+      args[:id]? ? invalid.id = args[:id]
+      raise invalid
+    end
+
+    return new(
+      args[:method]?.as(String),
+      args[:params]?.as(P),
+      args[:id]?.as(RID),
+      args[:jsonrpc]?.as(String)
+    )
   end
 
 end

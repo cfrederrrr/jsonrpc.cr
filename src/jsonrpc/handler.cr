@@ -22,6 +22,8 @@ class JSONRPC::Handler
         else Response(Nil).new(InvalidRequest.new).to_json(builder)
         end
       }
+    rescue err : JSONRPC::Error
+      Response(Nil).new(err)
     rescue JSON::ParseException
       Response(Nil).new(ParseError.new).to_json
     end

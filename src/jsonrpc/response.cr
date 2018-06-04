@@ -24,20 +24,28 @@ class JSONRPC::Response(R)
   JSON.mapping(
     jsonrpc: {
       type: String,
+      getter: false,
+      setter: false,
       default: JSONRPC::RPCVERSION
     },
     result: {
       type: R?,
+      getter: false,
+      setter: false,
       nilable: true,
       emit_null: false
     },
     error: {
       type: Error?,
+      getter: false,
+      setter: false,
       nilable: true,
       emit_null: false
     },
     id: {
       type: RID,
+      getter: false,
+      setter: false,
       nilable: true,
       emit_null: true
     }
