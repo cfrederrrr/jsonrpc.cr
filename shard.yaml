@@ -1,0 +1,15 @@
+name: jsonrpc
+version: 0.1.0
+
+description: JSON RPC handling in compliance with jsonrpc.org/specification
+
+crystal: 0.24.2
+
+targets:
+  shards:
+    main: src/jsonrpc.cr
+
+authors:
+  - Carl Frederick <galvertez@gmail.com>
+
+license: MIT
