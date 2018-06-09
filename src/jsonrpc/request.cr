@@ -40,7 +40,7 @@ class JSONRPC::Request(P)
       type: String,
       getter: false,
       setter: false,
-      default: JSONRPC::RPCVERSION
+      default: "2.0"
     },
     method: {
       type: String,
@@ -65,8 +65,12 @@ class JSONRPC::Request(P)
 
   # Clientside can create a new `Request(P)` with direct arguments, rather than with a pullparser
   #
-  def initialize(@method, @params : P = nil, @id : RID = nil, @jsonrpc = JSONRPC::RPCVERSION)
-    raise InvalidRequest.new("jsonrpc must be '2.0'") unless @jsonrpc == JSONRPC::RPCVERSION
+  def initialize(@method, @params : P = nil, @id : RID = nil, @jsonrpc = "2.0")
+     if @jsonrpc != "2.0"
+       error = InvalidRequest.new("jsonrpc must be '2.0'")
+       error.id = @id if @id
+       raise error
+     end
   end
 
   def self.new(parser : JSON::PullParser)

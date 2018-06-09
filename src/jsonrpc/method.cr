@@ -22,6 +22,7 @@ class JSONRPC::Method
     @action.call(req, builder)
   end
 
+  # :nodoc:
   private def invalid_params?(parameters) : Nil
     case @params
     when Array

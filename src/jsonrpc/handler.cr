@@ -23,7 +23,7 @@ class JSONRPC::Handler
         end
       }
     rescue err : JSONRPC::Error
-      Response(Nil).new(err)
+      Response(Nil).new(err).to_json
     rescue JSON::ParseException
       Response(Nil).new(ParseError.new).to_json
     end

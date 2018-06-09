@@ -26,7 +26,7 @@ class JSONRPC::Response(R)
       type: String,
       getter: false,
       setter: false,
-      default: JSONRPC::RPCVERSION
+      default: "2.0"
     },
     result: {
       type: R?,
@@ -51,20 +51,17 @@ class JSONRPC::Response(R)
     }
   )
 
-  def initialize(@result : R, @id : RID = nil)
+  def initialize(@result : R, @id : RID = nil, @jsonrpc = "2.0")
     @error = nil
-    @jsonrpc = JSONRPC::RPCVERSION
   end
 
-  def initialize(@error : Error, @id : RID = nil)
+  def initialize(@error : Error, @id : RID = nil, @jsonrpc = "2.0")
     @result = nil
-    @jsonrpc = JSONRPC::RPCVERSION
   end
 
-  def initialize(@id : RID = nil)
+  def initialize(@id : RID = nil, @jsonrpc = "2.0")
     @result = nil
     @error = nil
-    @jsonrpc = JSONRPC::RPCVERSION
   end
 
 end
