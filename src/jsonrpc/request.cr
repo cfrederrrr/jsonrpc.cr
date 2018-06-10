@@ -99,8 +99,7 @@ class JSONRPC::Request(P)
     end
 
     if invalid
-      invalid.id = args[:id]?
-      raise invalid
+      invalid.id = args[:id]? ; raise invalid
     end
 
     return new(
