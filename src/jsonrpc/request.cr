@@ -16,7 +16,7 @@ require "json"
 #
 # The server implementation always uses Request(JSON::Any)
 class JSONRPC::Request(P)
-  alias RID = String | Int32 | Nil
+  alias SID = String | Int32 | Nil
 
   # A `String` specifying the RPC method to be invoked.
   getter method : String
@@ -30,7 +30,7 @@ class JSONRPC::Request(P)
   # An identifier established by the client. If `nil` or excluded, then
   # the client does not expect a response - this is known as a
   # "notification" according to JSON RPC 2.0 specification
-  getter id : RID
+  getter id : SID
 
   # A `String` indicating the JSONRPC version
   getter jsonrpc : String
@@ -55,7 +55,7 @@ class JSONRPC::Request(P)
       emit_null: false
     },
     id: {
-      type: RID,
+      type: SID,
       getter: false,
       setter: false,
       nilable: true,
@@ -65,7 +65,7 @@ class JSONRPC::Request(P)
 
   # Clientside can create a new `Request(P)` with direct arguments, rather than with a pullparser
   #
-  def initialize(@method, @params : P = nil, @id : RID = nil, @jsonrpc = "2.0")
+  def initialize(@method, @params : P = nil, @id : SID = nil, @jsonrpc = "2.0")
      if @jsonrpc != "2.0"
        error = InvalidRequest.new("jsonrpc must be '2.0'")
        error.id = @id if @id
@@ -75,7 +75,7 @@ class JSONRPC::Request(P)
 
   def self.new(parser : JSON::PullParser)
     raise InvalidRequest.new unless parser.kind == :begin_object
-    args = {} of Symbol => String | P | RID | Nil
+    args = {} of Symbol => String | P | SID | Nil
     invalid = false
 
     parser.read_object do |key|
@@ -99,14 +99,14 @@ class JSONRPC::Request(P)
     end
 
     if invalid
-      args[:id]? ? invalid.id = args[:id]
+      invalid.id = args[:id]?
       raise invalid
     end
 
     return new(
       args[:method]?.as(String),
       args[:params]?.as(P),
-      args[:id]?.as(RID),
+      args[:id]?.as(SID),
       args[:jsonrpc]?.as(String)
     )
   end

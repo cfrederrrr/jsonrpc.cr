@@ -1,7 +1,7 @@
 require "json"
 
 class JSONRPC::Response(R)
-  alias RID = String | Int32 | Nil
+  alias SID = String | Int32 | Nil
 
   # JSON RPC version indicator.
   # Must be exactly `"2.0"` according to spec.
@@ -19,7 +19,7 @@ class JSONRPC::Response(R)
   getter error : Error?
 
   # Response has to include the same `@id` as its corresponding `Request`
-  getter id : RID
+  getter id : SID
 
   JSON.mapping(
     jsonrpc: {
@@ -43,7 +43,7 @@ class JSONRPC::Response(R)
       emit_null: false
     },
     id: {
-      type: RID,
+      type: SID,
       getter: false,
       setter: false,
       nilable: true,
@@ -51,15 +51,15 @@ class JSONRPC::Response(R)
     }
   )
 
-  def initialize(@result : R, @id : RID = nil, @jsonrpc = "2.0")
+  def initialize(@result : R, @id : SID = nil, @jsonrpc = "2.0")
     @error = nil
   end
 
-  def initialize(@error : Error, @id : RID = nil, @jsonrpc = "2.0")
+  def initialize(@error : Error, @id : SID = nil, @jsonrpc = "2.0")
     @result = nil
   end
 
-  def initialize(@id : RID = nil, @jsonrpc = "2.0")
+  def initialize(@id : SID = nil, @jsonrpc = "2.0")
     @result = nil
     @error = nil
   end

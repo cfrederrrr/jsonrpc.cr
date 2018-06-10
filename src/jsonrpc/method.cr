@@ -1,3 +1,4 @@
+# `JSONRPC::Method` is a logical representation of the serverside 
 class JSONRPC::Method
 
   @params : Array(String)|Int32?
