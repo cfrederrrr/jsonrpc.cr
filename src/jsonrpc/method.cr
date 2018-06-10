@@ -1,4 +1,5 @@
-# `JSONRPC::Method` is a logical representation of the serverside 
+# `JSONRPC::Method` is a logical representation of the serverside method. It possesses information
+# about what parameters to expect, and what to do with them.
 class JSONRPC::Method
 
   @params : Array(String)|Int32?
@@ -25,6 +26,8 @@ class JSONRPC::Method
 
   # :nodoc:
   private def invalid_params?(parameters) : Nil
+    return if @params == -1
+
     case @params
     when Array
       @params.each{ |a| raise InvalidParams.new unless parameters[a]? }

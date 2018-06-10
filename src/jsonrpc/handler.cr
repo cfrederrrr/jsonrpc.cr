@@ -7,8 +7,12 @@ class JSONRPC::Handler
 
   @methods = {} of String => Method
 
-  def register_method(name : String, params : Array(String), &block : JSON::Any -> _)
+  def register(name : String, params : Array(String), &block : JSON::Any -> _)
     @methods[name] = Method.new *params, &block
+  end
+
+  def method?(name : String) : Method | Bool
+    @methods[name]? || false
   end
 
   def handle(json : String) : String
@@ -34,6 +38,9 @@ class JSONRPC::Handler
     handle_request(request, builder)
   end
 
+  # Handles a batch of requests
+  # - Only returns serialized Array, even if some requests are invalid
+  # - Only raises a JSON::ParseException
   def batch(parser : JSON::PullParser, builder : JSON::Builder) : Nil
     b = [] of Request(JSON::Any)
     parser.read_array do
@@ -48,18 +55,18 @@ class JSONRPC::Handler
   end
 
   private def handle_request(req : Request(JSON::Any), builder : JSON::Builder) : Nil
-    if req.jsonrpc != RPCVERSION
-      Response(Nil).new(InvalidRequest.new, request.id).to_json(builder)
+    if req.jsonrpc != "2.0"
+      Response(Nil).new(InvalidRequest.new, req.id).to_json(builder)
       return
     end
 
-    method = @methods[req.name]?
+    method = method? req.name
     if method.nil?
-      Response(Nil).new(MethodNotFound.new, request.id).to_json(builder)
+      Response(Nil).new(MethodNotFound.new, req.id).to_json(builder)
       return
     end
 
-    method.call(request, builder)
+    method.call(req, builder)
   end
 
 end
