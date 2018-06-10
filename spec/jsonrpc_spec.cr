@@ -66,7 +66,7 @@ describe "JSONRPC" do
     # <-- [{"jsonrpc":"2.0","error":{"code":-32600,"message":"Invalid Request"},"id":null}]
   end
 
-  it "handles an rpc call with invalid Batch"
+  it "handles an rpc call with invalid Batch" do
     #
     # --> req = %([1,2,3])
     # <-- [
