@@ -1,7 +1,9 @@
 require "./spec_helper"
 
-JSONRPC.register_method "subtract", 2 do
-
+JSONRPC.register_method "subtract", -1 do |params|
+  total = params.shift
+  total = total - params.shift while params.any?
+  total
 end
 
 #
