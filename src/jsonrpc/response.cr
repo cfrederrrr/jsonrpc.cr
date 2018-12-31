@@ -23,31 +23,31 @@ class JSONRPC::Response(R)
 
   JSON.mapping(
     jsonrpc: {
-      type: String,
-      getter: false,
-      setter: false,
-      default: "2.0"
+      type:    String,
+      getter:  false,
+      setter:  false,
+      default: "2.0",
     },
     result: {
-      type: R?,
-      getter: false,
-      setter: false,
-      nilable: true,
-      emit_null: false
+      type:      R?,
+      getter:    false,
+      setter:    false,
+      nilable:   true,
+      emit_null: false,
     },
     error: {
-      type: Error?,
-      getter: false,
-      setter: false,
-      nilable: true,
-      emit_null: false
+      type:      Error?,
+      getter:    false,
+      setter:    false,
+      nilable:   true,
+      emit_null: false,
     },
     id: {
-      type: SID,
-      getter: false,
-      setter: false,
-      nilable: true,
-      emit_null: true
+      type:      SID,
+      getter:    false,
+      setter:    false,
+      nilable:   true,
+      emit_null: true,
     }
   )
 
@@ -63,5 +63,4 @@ class JSONRPC::Response(R)
     @result = nil
     @error = nil
   end
-
 end

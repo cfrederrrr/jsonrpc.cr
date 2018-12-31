@@ -37,69 +37,61 @@ class JSONRPC::Request(P)
 
   JSON.mapping(
     jsonrpc: {
-      type: String,
-      getter: false,
-      setter: false,
-      default: "2.0"
+      type:    String,
+      getter:  false,
+      setter:  false,
+      default: "2.0",
     },
     method: {
-      type: String,
+      type:   String,
       getter: false,
-      setter: false
+      setter: false,
     },
     params: {
-      type: P,
-      getter: false,
-      setter: false,
-      nilable: true,
-      emit_null: false
+      type:      P,
+      getter:    false,
+      setter:    false,
+      nilable:   true,
+      emit_null: false,
     },
     id: {
-      type: SID,
-      getter: false,
-      setter: false,
-      nilable: true,
-      emit_null: false
+      type:      SID,
+      getter:    false,
+      setter:    false,
+      nilable:   true,
+      emit_null: false,
     }
   )
 
   # Clientside can create a new `Request(P)` with direct arguments, rather than with a pullparser
   #
   def initialize(@method, @params : P = nil, @id : SID = nil, @jsonrpc = "2.0")
-     if @jsonrpc != "2.0"
-       error = InvalidRequest.new("jsonrpc must be '2.0'")
-       error.id = @id if @id
-       raise error
-     end
+    if @jsonrpc != "2.0"
+      raise InvalidRequest.new("jsonrpc must be '2.0'")
+    end
   end
 
   def self.new(parser : JSON::PullParser)
     raise InvalidRequest.new unless parser.kind == :begin_object
     args = {} of Symbol => String | P | SID | Nil
-    invalid = false
 
     parser.read_object do |key|
       case
       when key == "method"
         args[:method] = String.new(parser)
       when key == "id"
-        args[:id] = case parser.kind
-          when :int then Int32.new(parser)
-          when :string then String.new(parser)
-          else
-            invalid = InvalidRequest.new "id must be string or int"
-          end
+        case parser.kind
+        when :string then args[:id] = String.new(parser)
+        when :int    then args[:id] = Int32.new(parser)
+        else              raise InvalidRequest.new "id must be string or int"
+        end
       when key == "params"
         args[:params] = P.new(parser)
       when key == "jsonrpc"
         args[:jsonrpc] = String.new(parser)
       else
-        invalid = InvalidRequest.new "unrecognized member: '#{key}'"
+        raise InvalidRequest.new "unrecognized member: '#{key}'"
       end
-    end
-
-    if invalid
-      invalid.id = args[:id]? ; raise invalid
     end
 
     return new(
@@ -109,5 +101,4 @@ class JSONRPC::Request(P)
       args[:jsonrpc]?.as(String)
     )
   end
-
 end

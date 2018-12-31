@@ -4,17 +4,6 @@
 abstract class JSONRPC::Error < ::Exception
   abstract def to_json
   abstract def to_json(io : IO)
-
-  # `JSONRPC::Handler` and `JSONRPC::Response(R)` sometimes needs a way to get a request's ID after
-  # a failure of some kind. `JSONRPC::Error#id=` and `JSONRPC::Error#id` make it possible to access
-  def id=(id : Int32|String)
-    @id = id
-  end
-
-  # ditto
-  def id
-    @id
-  end
 end
 
 # Exception indicating that the JSON sent is not a valid `Request` object.
@@ -82,7 +71,7 @@ class JSONRPC::InternalError < JSONRPC::Error
   JSON.mapping(
     message: {type: String?, default: "internal-error", setter: false},
     code: {type: Int32, default: -32603, setter: false},
-    data: {type: String?, nilable: true,default: nil}
+    data: {type: String?, nilable: true, default: nil}
   )
 
   # Used serverside to generate `InternalError`. Some notes:

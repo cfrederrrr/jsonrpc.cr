@@ -9,5 +9,12 @@ require "./jsonrpc/handler"
 
 module JSONRPC
   HANDLER = Handler.new
-  forward_missing_to HANDLER
+
+  def self.handle(json : String)
+    HANDLER.handle json
+  end
+
+  def self.register(name : String, params : Array(String) | Int32? = nil, &block : JSON::Any -> _)
+    HANDLER.register name, params, &block
+  end
 end
