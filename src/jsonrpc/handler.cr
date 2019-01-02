@@ -9,7 +9,7 @@ abstract class JSONRPC::Handler
     return JSONRPC::Response(Nil).new(InvalidRequest.new).to_json if parser.kind != :begin_object
 
     parser.read_object do |key|
-      next unless key == "method"
+      skip unless key == "method"
       method = String.new(parser)
       break
     end
