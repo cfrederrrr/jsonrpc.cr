@@ -1,68 +1,68 @@
-require "json"
-
-require "./request"
-require "./response"
-
-class JSONRPC::Handler
-  @methods = {} of String => Method
-
-  def register(name : String, params : Array(String) | Int32? = nil, &block : JSON::Any -> _)
-    @methods[name] = Method.new *params, &block
-  end
-
-  def lookup_method(name : String) : Method | Bool
-    @methods[name]? || raise MethodNotFound.new
-  end
-
-  def handle(json : String) : String
+abstract class JSONRPC::Handler
+  # Searches the request for the "method" key and passes it, and the request
+  # to #invoke_rpc(name : String, request : String)
+  def handle(json : String)
+    method : String
     parser = JSON::PullParser.new(json)
 
-    begin
-      JSON.build do |builder|
-        case parser.kind
-        when :begin_object then handle parser, builder
-        when :begin_array  then batch parser, builder
-        else                    Response(Nil).new(InvalidRequest.new).to_json(builder)
-        end
-      end
-    rescue JSON::ParseException
-      Response(Nil).new(ParseError.new).to_json
+    return handle_batch(parser) if parser.kind == :begin_array
+    return JSONRPC::Response(Nil).new(InvalidRequest.new).to_json if parser.kind != :begin_object
+
+    parser.read_object do |key|
+      next unless key == "method"
+      method = String.new(parser)
+      break
     end
+
+    invoke_rpc(method_name, json)
   end
 
-  def handle(parser : JSON::PullParser, builder : JSON::Builder) : Nil
-    request = Request(JSON::Any).new(parser)
-    handle_request(request, builder)
-  end
-
-  # Handles a batch of requests
-  # - Only returns serialized Array, even if some requests are invalid
-  # - Only raises a JSON::ParseException
-  def batch(parser : JSON::PullParser, builder : JSON::Builder) : Nil
-    b = [] of Request(JSON::Any) | Error
+  def handle_batch(parser : JSON::PullParser)
     parser.read_array do
-      b << Request(JSON::Any).new(parser)
+      # this will not work - handle does not accept JSON::PullParser as an argument
+      # have to figure out how to pull out the whole object without parsing it
+      # not sure if this is possible and if it's not then jsonrpc.cr can't support
+      # batch requests until a workaround is found
+      handle(parser)
     end
+  end
 
-    builder.array do
-      b.each do |request|
-        handle_request request, builder
+  macro expose_rpc
+    {% for m in @type.methods %}
+      {% if m.annotation(::JSONRPC::Method) && !m.annotation(::JSONRPC::Method).first %}
+        {% raise "#{@type}\##{m.name}'s JSONRPC::Method annotation needs a name" %}
+      {% end %}
+    {% end %}
+
+    private def invoke_rpc(method : String, json : String)
+      case name
+      when ""
+        raise JSONRPC::InvalidRequest.new("method cannot empty")
+      {% for m in @type.methods %}
+      when {{m.first}}
+        {% if m.args.first %}
+        request = JSONRPC::Request({{m.args.first.restriction}}).new(json)
+        result = {{m.name}}(request.params)
+        {% else %}
+        request = JSONRPC::Request(Nil).new(json)
+        result = {{m.name}}
+        {% end %}
+        return JSONRPC::Response({m.return_type}).new(result, request.id)
+      {% end %}
+      else
+        raise JSONRPC::MethodNotFound.new
       end
     end
   end
 
-  private def handle_request(req : Request(JSON::Any), builder : JSON::Builder) : Nil
-    if req.jsonrpc != "2.0"
-      Response(Nil).new(InvalidRequest.new, req.id).to_json(builder)
-      return
+  # Block inheritance from any child classes of `JSONRPC::Handler`
+  # because it is not feasible to capture all methods exposed by a handler
+  # class which inherits from another.
+  macro inherited
+    macro inherited
+      raise "{{ @type }} cannot be inherited from due to limitations of crystal. " + \
+            "When those limitations are dealt with, this inheritance restriction " + \
+            "will be removed."
     end
-
-    method = lookup_method req.method
-    if method.nil?
-      Response(Nil).new(MethodNotFound.new, req.id).to_json(builder)
-      return
-    end
-
-    method.call(req, builder)
   end
 end
