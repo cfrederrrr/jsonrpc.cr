@@ -1,20 +1,29 @@
 abstract class JSONRPC::Handler
+
+  # Handles notifications. This method will not return a response to the client,
+  # so returning a value is not likely to be useful, unless you intend to do logging
+  # outside the notify method
+  abstract def notify
+
   # Searches the request for the "method" key and passes it, and the request
   # to #invoke_rpc(name : String, request : String)
-  def handle(json : String)
-    method : String
+  def handle(json : String) : String
+    name : String
     parser = JSON::PullParser.new(json)
 
     return handle_batch(parser) if parser.kind == :begin_array
     return JSONRPC::Response(Nil).new(InvalidRequest.new).to_json if parser.kind != :begin_object
 
     parser.read_object do |key|
-      skip unless key == "method"
-      method = String.new(parser)
+      parser.skip unless key == "method"
+      name = String.new(parser)
+      # we no longer care about the rest right now and don't want to waste time reading it
       break
     end
 
-    invoke_rpc(method_name, json)
+    method = invoke_rpc(name, json)
+    yield method if block_given?
+    return method.response.to_json
   end
 
   def handle_batch(parser : JSON::PullParser)
@@ -29,28 +38,40 @@ abstract class JSONRPC::Handler
 
   macro expose_rpc
     {% for m in @type.methods %}
-      {% if m.annotation(::JSONRPC::Method) && !m.annotation(::JSONRPC::Method).first %}
-        {% raise "#{@type}\##{m.name}'s JSONRPC::Method annotation needs a name" %}
+      {% if m.annotation(::JSONRPC::Method) %}
+        {% title = "#{@type}\##{m.name}" %}
+        {% if !m.annotation(::JSONRPC::Method).first %}
+          {% raise "#{title}'s JSONRPC::Method annotation needs a name" %}
+        {% end %}
+        {% if m.args.size > 1 %}
+          {% raise "#{title}: too many arguments - JSONRPC methods should take only one" %}
+        {% end %}
       {% end %}
     {% end %}
 
-    private def invoke_rpc(method : String, json : String)
+    private def invoke_rpc(name : String, json : String) : JSONRPC::Method
       case name
       when ""
-        raise JSONRPC::InvalidRequest.new("method cannot empty")
-      {% for m in @type.methods %}
+        # We don't care what type the params are, because the request cannot be processed
+        # without a name
+        request = JSONRPC::Request(JSON::Any).new(json)
+        JSONRPC::Method(JSON::Any, JSONRPC::InvalidRequest).new do
+          JSONRPC::InvalidRequest.new("method cannot empty")
+        end
+      {% for m in @type.methods %} {% params = m.args.first.restriction %} {% result = m.return_type %}
       when {{m.first}}
-        {% if m.args.first %}
-        request = JSONRPC::Request({{m.args.first.restriction}}).new(json)
-        result = {{m.name}}(request.params)
-        {% else %}
-        request = JSONRPC::Request(Nil).new(json)
-        result = {{m.name}}
-        {% end %}
-        return JSONRPC::Response({m.return_type}).new(result, request.id)
+        request = JSONRPC::Request({{params}}).new(json)
+        JSONRPC::Method({{params}}, {{result}}).new(request) do
+          {{m.name}}({% if m.args.first %}request.params{% end %})
+        end
       {% end %}
       else
-        raise JSONRPC::MethodNotFound.new
+        # We don't care what type the params are, because the request cannot be processed
+        # if it is not registered
+        request = JSONRPC::Request(JSON::Any).new(json)
+        JSONRPC::Method(JSON::Any, JSONRPC::MethodNotFound).new(request) do
+          JSONRPC::MethodNotFound.new
+        end
       end
     end
   end
