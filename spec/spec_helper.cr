@@ -3,9 +3,22 @@ require "http/server"
 
 require "../src/jsonrpc"
 
-TEST_SERVER = HTTP::Server.new(8080) do |context|
-  context.response.content_type = "application/json"
-  context.response.print JSONRPC.handle(context.request.body.to_s)
-end
+class JSONRPC::SpecHandler < JSONRPC::Handler
 
-TEST_SERVER.listen
+  class SubtractionHelper
+    JSON.mapping(subtrahend: {type: Int32, getter: true}, minuend: {type: Int32, getter: true})
+  end
+
+  def subtract(numbers : Array(Int32)) : Int32
+    start = numbers.shift
+    numbers.reduce(start) do |memo, number|
+      memo - number
+    end
+  end
+
+  def subtract(pair : SubtractionHelper) : Int32
+    pair.minuend - pair.subtrahend
+  end
+
+  expose_rpc
+end
