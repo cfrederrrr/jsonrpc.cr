@@ -1,9 +1,9 @@
-# Container class for JSON RPC method invocation includes the name, id, request and response
+# A container class for JSON RPC method invocation includes the name, id, request and response
 # of the scenario
 #
 # Comes with some convenience methods for assessing the status of the invocation and
 # inspecting the data of the request and response
-class JSONRPC::Method(P, R)
+class JSONRPC::Context(P, R)
   alias SID = String | Int32 | Nil
 
   getter name : String

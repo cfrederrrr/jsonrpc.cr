@@ -26,7 +26,7 @@ abstract class JSONRPC::Handler
     return method.response.to_json
   end
 
-  def handle_batch(parser : JSON::PullParser)
+  def handle_batch(parser : JSON::PullParser) : Array(JSONRPC::Context)
     parser.read_array do
       # this will not work - handle does not accept JSON::PullParser as an argument
       # have to figure out how to pull out the whole object without parsing it
@@ -36,6 +36,15 @@ abstract class JSONRPC::Handler
     end
   end
 
+  # Gathers up all methods annotated with `@[JSONRPC::Method("name")]` and adds them to
+  # the `#invoke_rpc` method
+  #
+  # In order for this to work as expected...
+  # - All methods annotated as a `JSONRPC::Method` must take one argument
+  # - The `JSONRPC::Method` annotation itself must have one String argument (the name it will be
+  #   accessed as remotely)
+  # - All methods annotated as a `JSONRPC::Method` must specify a return type
+  # - The last line of your class definition must be `expose_rpc`
   macro expose_rpc
     {% for m in @type.methods %}
       {% if m.annotation(::JSONRPC::Method) %}
@@ -49,19 +58,19 @@ abstract class JSONRPC::Handler
       {% end %}
     {% end %}
 
-    private def invoke_rpc(name : String, json : String) : JSONRPC::Method
+    private def invoke_rpc(name : String, json : String) : JSONRPC::Context
       case name
       when ""
         # We don't care what type the params are, because the request cannot be processed
         # without a name
         request = JSONRPC::Request(JSON::Any).new(json)
-        JSONRPC::Method(JSON::Any, JSONRPC::InvalidRequest).new do
+        JSONRPC::Context(JSON::Any, JSONRPC::InvalidRequest).new do
           JSONRPC::InvalidRequest.new("method cannot empty")
         end
       {% for m in @type.methods %} {% params = m.args.first.restriction %} {% result = m.return_type %}
       when {{m.first}}
         request = JSONRPC::Request({{params}}).new(json)
-        JSONRPC::Method({{params}}, {{result}}).new(request) do
+        JSONRPC::Context({{params}}, {{result}}).new(request) do
           {{m.name}}({% if m.args.first %}request.params{% end %})
         end
       {% end %}
@@ -69,7 +78,7 @@ abstract class JSONRPC::Handler
         # We don't care what type the params are, because the request cannot be processed
         # if it is not registered
         request = JSONRPC::Request(JSON::Any).new(json)
-        JSONRPC::Method(JSON::Any, JSONRPC::MethodNotFound).new(request) do
+        JSONRPC::Context(JSON::Any, JSONRPC::MethodNotFound).new(request) do
           JSONRPC::MethodNotFound.new
         end
       end
