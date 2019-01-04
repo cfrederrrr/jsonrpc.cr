@@ -25,7 +25,7 @@ class JSONRPC::Request(P)
   # - `Array` means positional arguments
   # - `Hash` means named arguments
   # - Omitting this key means no arguments.
-  getter params : P
+  getter params : P?
 
   # An identifier established by the client. If `nil` or excluded, then
   # the client does not expect a response - this is known as a
@@ -48,7 +48,7 @@ class JSONRPC::Request(P)
       setter: false,
     },
     params: {
-      type:      P,
+      type:      P?,
       getter:    false,
       setter:    false,
       nilable:   true,
@@ -65,7 +65,7 @@ class JSONRPC::Request(P)
 
   # Clientside can create a new `Request(P)` with direct arguments, rather than with a pullparser
   #
-  def initialize(@method, @params : P = nil, @id : SID = nil, @jsonrpc = "2.0")
+  def initialize(@method, @params : P? = nil, @id : SID = nil, @jsonrpc = "2.0")
     if @jsonrpc != "2.0"
       raise InvalidRequest.new("jsonrpc must be '2.0'")
     end
@@ -73,32 +73,34 @@ class JSONRPC::Request(P)
 
   def self.new(parser : JSON::PullParser)
     raise InvalidRequest.new unless parser.kind == :begin_object
-    args = {} of Symbol => String | P | SID | Nil
+    method  : String? = nil
+    params  : P?      = nil
+    id      : SID?    = nil
+    jsonrpc : String? = nil
 
     parser.read_object do |key|
       case
       when key == "method"
-        args[:method] = String.new(parser)
+        method = String.new(parser)
       when key == "id"
         case parser.kind
-        when :string then args[:id] = String.new(parser)
-        when :int    then args[:id] = Int32.new(parser)
+        when :string then id = String.new(parser)
+        when :int    then id = Int32.new(parser)
         else              raise InvalidRequest.new "id must be string or int"
         end
       when key == "params"
-        args[:params] = P.new(parser)
+        params = P.new(parser)
       when key == "jsonrpc"
-        args[:jsonrpc] = String.new(parser)
+        jsonrpc = String.new(parser)
       else
         raise InvalidRequest.new "unrecognized member: '#{key}'"
       end
     end
 
-    return new(
-      args[:method]?.as(String),
-      args[:params]?.as(P),
-      args[:id]?.as(SID),
-      args[:jsonrpc]?.as(String)
-    )
+    if method && jsonrp
+      return new(method, params, id, jsonrpc)
+    else
+      raise JSONRPC::InvalidRequest.new "can't generate request: members missing from json"
+    end
   end
 end
