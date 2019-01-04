@@ -16,7 +16,7 @@ class JSONRPC::Response(R)
 
   # This key is included if the method did not run successfully. It is
   # excluded if the method was enacted successfully.
-  getter error : Error?
+  getter error : JSONRPC::Error?
 
   # Response has to include the same `@id` as its corresponding `Request`
   getter id : SID
@@ -55,7 +55,7 @@ class JSONRPC::Response(R)
     @error = nil
   end
 
-  def initialize(@error : Error, @id : SID = nil, @jsonrpc = "2.0")
+  def initialize(@error : JSONRPC::Error, @id : SID = nil, @jsonrpc = "2.0")
     @result = nil
   end
 
