@@ -64,21 +64,25 @@ abstract class JSONRPC::Handler
         # We don't care what type the params are, because the request cannot be processed
         # without a name
         request = JSONRPC::Request(JSON::Any).new(json)
-        JSONRPC::Context(JSON::Any, JSONRPC::InvalidRequest).new do
+        JSONRPC::Context(JSON::Any, Nil).new do
           JSONRPC::InvalidRequest.new("method cannot empty")
         end
-      {% for m in @type.methods %} {% params = m.args.first.restriction %} {% result = m.return_type %}
+      {% for m in @type.methods %} {% mp = m.args.first.restriction %} {% mr = m.return_type %}
       when {{m.first}}
-        request = JSONRPC::Request({{params}}).new(json)
-        JSONRPC::Context({{params}}, {{result}}).new(request) do
-          {{m.name}}({% if m.args.first %}request.params{% end %})
+        {% if m.args.first %}
+        JSONRPC::Context({{mp}}, {{mr}}).new(json) do |params|
+          {{m.name}}(params)
         end
+        {% else %}
+        JSONRPC::Context({{mp}}, {{mr}}).new(json) do
+          {{m.name}}
+        end
+        {% end %}
       {% end %}
       else
         # We don't care what type the params are, because the request cannot be processed
         # if it is not registered
-        request = JSONRPC::Request(JSON::Any).new(json)
-        JSONRPC::Context(JSON::Any, JSONRPC::MethodNotFound).new(request) do
+        JSONRPC::Context(JSON::Any, Nil).new(json) do
           JSONRPC::MethodNotFound.new
         end
       end
