@@ -26,7 +26,7 @@ class JSONRPC::Response(R)
       type:    String,
       getter:  false,
       setter:  false,
-      default: "2.0",
+      default: "2.0"
     },
     result: {
       type:      R?,
@@ -34,33 +34,32 @@ class JSONRPC::Response(R)
       setter:    false,
       nilable:   true,
       emit_null: false,
+      default: nil
     },
     error: {
-      type:      Error?,
+      type:      JSONRPC::Error?,
       getter:    false,
       setter:    false,
       nilable:   true,
       emit_null: false,
+      default:   nil
     },
     id: {
       type:      SID,
       getter:    false,
       setter:    false,
       nilable:   true,
-      emit_null: true,
+      emit_null: true
     }
   )
 
+  # Serverside can create a new `Response(R)` with direct arguments, rather than with a pullparser
   def initialize(@result : R, @id : SID = nil, @jsonrpc = "2.0")
     @error = nil
   end
 
+  # Serverside can create a new `Response(R)` with direct arguments, rather than with a pullparser
   def initialize(@error : JSONRPC::Error, @id : SID = nil, @jsonrpc = "2.0")
     @result = nil
-  end
-
-  def initialize(@id : SID = nil, @jsonrpc = "2.0")
-    @result = nil
-    @error = nil
   end
 end

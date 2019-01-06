@@ -64,43 +64,6 @@ class JSONRPC::Request(P)
   )
 
   # Clientside can create a new `Request(P)` with direct arguments, rather than with a pullparser
-  #
-  def initialize(@method, @params : P? = nil, @id : SID = nil, @jsonrpc = "2.0")
-    if @jsonrpc != "2.0"
-      raise InvalidRequest.new("jsonrpc must be '2.0'")
-    end
-  end
-
-  def self.new(parser : JSON::PullParser)
-    raise InvalidRequest.new unless parser.kind == :begin_object
-    method  : String? = nil
-    params  : P?      = nil
-    id      : SID?    = nil
-    jsonrpc : String? = nil
-
-    parser.read_object do |key|
-      case
-      when key == "method"
-        method = String.new(parser)
-      when key == "id"
-        case parser.kind
-        when :string then id = String.new(parser)
-        when :int    then id = Int32.new(parser)
-        else              raise InvalidRequest.new "id must be string or int"
-        end
-      when key == "params"
-        params = P.new(parser)
-      when key == "jsonrpc"
-        jsonrpc = String.new(parser)
-      else
-        raise InvalidRequest.new "unrecognized member: '#{key}'"
-      end
-    end
-
-    if method && jsonrp
-      return new(method, params, id, jsonrpc)
-    else
-      raise JSONRPC::InvalidRequest.new "can't generate request: members missing from json"
-    end
+  def initialize(@method : String, @params : P? = nil, @id : SID = nil, @jsonrpc = "2.0")
   end
 end

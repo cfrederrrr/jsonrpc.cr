@@ -1,11 +1,11 @@
 class JSONRPC::Context::Serverside(P, R) < JSONRPC::Context(P, R)
   def self.new(json : String, &block)
     begin
-      new(JSONRPC::Request(P).new(json), &block)
-    rescue error : JSONRPC::Error
-      new(nil, JSONRPC::Response(Nil).new(error))
+      new(JSONRPC::Request(P).from_json(json), &block)
     rescue JSON::MappingError
-      new(nil, JSONRPC::Response(Nil).new(JSONRPC::InvalidRequest.new))
+      new(nil, JSONRPC::Response(Nil).new(JSONRPC::Error.invalid_request))
+    rescue Exception
+      new(nil, JSONRPC::Response(Nil).new(JSONRPC::Error.internal_error)
     end
   end
 
@@ -15,10 +15,8 @@ class JSONRPC::Context::Serverside(P, R) < JSONRPC::Context(P, R)
     begin
       result = @request.params.nil? yield : yield(@request.params)
       @response = JSONRPC::Response(R).new(result, @id) if @id
-    rescue error : JSONRPC::Error
-      @response = JSONRPC::Response(Nil).new(error)
-    rescue exception
-      @response = JSONRPC::Response(Nil).new JSONRPC::InternalError.new(unknown_error.message)
+    rescue Exception
+      @response = JSONRPC::Response(Nil).new(JSONRPC::Error.internal_error)
     end
   end
 end

@@ -1,5 +1,5 @@
 class JSONRPC::Context::Clientside(P, R) < JSONRPC::Context(P, R)
-  def initialize(@name : String, params : P, @id : JSONRPC::Context::SID = rand(0x11111111))
+  def initialize(@name : String, params : P, @id : JSONRPC::Context::SID = rand(0x7fffffff))
     @request = JSONRPC::Request(P).new(name, params, @id)
     begin
       json = yield(@request)
