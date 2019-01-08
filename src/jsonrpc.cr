@@ -4,8 +4,7 @@ module JSONRPC
 end
 
 require "./jsonrpc/version"
-require "./jsonrpc/errors"
+require "./jsonrpc/error"
 require "./jsonrpc/request"
 require "./jsonrpc/response"
 require "./jsonrpc/context"
-require "./jsonrpc/handler"

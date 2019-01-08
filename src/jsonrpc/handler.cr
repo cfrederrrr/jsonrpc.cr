@@ -1,5 +1,6 @@
-abstract class JSONRPC::Handler
+require "../json/pull_parser"
 
+abstract class JSONRPC::Handler
   # Handles notifications. This method will not return a response to the client,
   # so returning a value is not likely to be useful, unless you intend to do logging
   # outside the notify method
