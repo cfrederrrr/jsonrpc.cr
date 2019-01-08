@@ -1,11 +1,15 @@
 class JSONRPC::Context::Serverside(P, R) < JSONRPC::Context(P, R)
-  def self.new(json : String, &block)
+  def self.new(parser : JSON::PullParser, &block)
     begin
-      new(JSONRPC::Request(P).from_json(json), &block)
-    rescue JSON::MappingError
-      new(nil, JSONRPC::Response(Nil).new(JSONRPC::Error.invalid_request))
+      new JSONRPC::Request(P).new(parser), &block
+    rescue error : JSON::MappingError
+      if error.message == "invalid-params"
+        new nil, JSONRPC::Response(Nil).new(JSONRPC::Error.invalid_params)
+      else
+        new nil, JSONRPC::Response(Nil).new(JSONRPC::Error.invalid_request)
+      end
     rescue Exception
-      new(nil, JSONRPC::Response(Nil).new(JSONRPC::Error.internal_error)
+      new nil, JSONRPC::Response(Nil).new(JSONRPC::Error.internal_error)
     end
   end
 
