@@ -11,28 +11,36 @@ abstract class JSONRPC::Handler
     name : String
     parser = JSON::PullParser.new(json)
 
-    return handle_batch(parser) if parser.kind == :begin_array
-    return JSONRPC::Response(Nil).new(InvalidRequest.new).to_json if parser.kind != :begin_object
+    case parser.kind
+    when :begin_object then handle(parser)
+    when :begin_array  then handle_batch(parser)
+    else                    JSONRPC::Response(Nil).new(JSONRPC::Error.invalid_request).to_json
+    end
+  end
 
-    parser.read_object do |key|
-      parser.skip unless key == "method"
-      name = String.new(parser)
-      # we no longer care about the rest right now and don't want to waste time reading it
+  def handle(parser : JSON::PullParser) : String
+    _parser = parser.dup
+
+    _parser.read_object do |key|
+      _parser.skip unless key == "method"
+      name = String.new(_parser)
+      # we don't care about the rest and don't want to waste time reading it
       break
     end
 
-    method = invoke_rpc(name, json)
-    yield method if block_given?
-    return method.response.to_json
+    context = invoke_rpc(name, parser)
+    yield context if block_given?
+    return context.response.to_json
   end
 
-  def handle_batch(parser : JSON::PullParser) : Array(JSONRPC::Context)
-    parser.read_array do
-      # this will not work - handle does not accept JSON::PullParser as an argument
-      # have to figure out how to pull out the whole object without parsing it
-      # not sure if this is possible and if it's not then jsonrpc.cr can't support
-      # batch requests until a workaround is found
-      handle(parser)
+  def handle_batch(parser : JSON::PullParser, &block) : String
+    JSON.build do |builder|
+      builder.array do
+        parser.read_array do
+          # handle(parser, &block) always returns a JSON encoded string
+          json.raw handle(parser, &block)
+        end
+      end
     end
   end
 
@@ -58,23 +66,22 @@ abstract class JSONRPC::Handler
       {% end %}
     {% end %}
 
-    private def invoke_rpc(name : String, json : String) : JSONRPC::Context
+    private def invoke_rpc(name : String, parser : JSON::PullParser) : JSONRPC::Context
       case name
       when ""
         # We don't care what type the params are, because the request cannot be processed
         # without a name
-        request = JSONRPC::Request(JSON::Any).new(json)
-        JSONRPC::Context(JSON::Any, Nil).new do
-          JSONRPC::InvalidRequest.new("method cannot empty")
+        JSONRPC::Context(JSON::Any, Nil).new(parser) do |request|
+          JSONRPC::InvalidRequest(Nil).new("method cannot empty", request.id)
         end
       {% for m in @type.methods %} {% mp = m.args.first.restriction %} {% mr = m.return_type %}
       when {{m.first}}
         {% if m.args.first %}
-        JSONRPC::Context({{mp}}, {{mr}}).new(json) do |params|
+        JSONRPC::Context({{mp}}, {{mr}}).new(parser) do |params|
           {{m.name}}(params)
         end
         {% else %}
-        JSONRPC::Context({{mp}}, {{mr}}).new(json) do
+        JSONRPC::Context({{mp}}, {{mr}}).new(parser) do
           {{m.name}}
         end
         {% end %}
@@ -82,7 +89,7 @@ abstract class JSONRPC::Handler
       else
         # We don't care what type the params are, because the request cannot be processed
         # if it is not registered
-        JSONRPC::Context(JSON::Any, Nil).new(json) do
+        JSONRPC::Context(JSON::Any, Nil).new(parser) do
           JSONRPC::MethodNotFound.new
         end
       end
