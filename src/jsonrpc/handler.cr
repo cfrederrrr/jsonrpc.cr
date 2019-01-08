@@ -7,13 +7,13 @@ abstract class JSONRPC::Handler
 
   # Searches the request for the "method" key and passes it, and the request
   # to #invoke_rpc(name : String, request : String)
-  def handle(json : String) : String
+  def handle(json : String, &block) : String
     name : String
     parser = JSON::PullParser.new(json)
 
     case parser.kind
-    when :begin_object then handle(parser)
-    when :begin_array  then handle_batch(parser)
+    when :begin_object then handle(parser, &block)
+    when :begin_array  then handle_batch(parser, &block)
     else                    JSONRPC::Response(Nil).new(JSONRPC::Error.invalid_request).to_json
     end
   end
