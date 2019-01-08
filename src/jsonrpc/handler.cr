@@ -8,7 +8,6 @@ abstract class JSONRPC::Handler
   # Searches the request for the "method" key and passes it, and the request
   # to #invoke_rpc(name : String, request : String)
   def handle(json : String, &block) : String
-    name : String
     parser = JSON::PullParser.new(json)
 
     case parser.kind
@@ -19,6 +18,7 @@ abstract class JSONRPC::Handler
   end
 
   def handle(parser : JSON::PullParser) : String
+    name : String
     _parser = parser.dup
 
     _parser.read_object do |key|
