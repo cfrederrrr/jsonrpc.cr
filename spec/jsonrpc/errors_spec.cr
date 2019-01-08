@@ -1,69 +1,38 @@
 require "../../spec_helper"
 
 describe "JSONRPC::Error" do
-end
-
-describe "JSONRPC::InvalidRequest" do
-  data = "internal error occurred!"
-  example = JSONRPC::InvalidRequest.new data
-
-  describe "#code" do
-    it "should always be -32600" do
-      example.code.should eq(-32600)
-    end
+  it "constructs an 'invalid request' error" do
+    invalid_request = JSONRPC::Error.invalid_request "request is invalid"
+    invalid_request.message.should eq "invalid-request"
+    invalid_request.code.should eq -32600
+    invalid_request.data.should eq "request is invalid"
   end
 
-  describe "#message" do
-    it "should always be 'invalid-request'" do
-      example.message.should eq("invalid-request")
-    end
+  it "constructs a 'method not found' error" do
+    method_not_found = JSONRPC::Error.method_not_found "method is not found"
+    method_not_found.message.should eq "method-not-found"
+    method_not_found.code.should eq -32601
+    method_not_found.data.should eq "method is not found"
   end
 
-  describe "#data" do
-    it "should match param provided in .new(data : String?)" do
-      describe "#{data}" do
-        example.data.should eq(data)
-      end
-
-      describe "nil" do
-        JSONRPC::InvalidRequest.new.data.should be_nil
-      end
-    end
+  it "constructs an 'invalid params' error" do
+    invalid_params = JSONRPC::Error.invalid_params "parameters are invalid"
+    invalid_params.message.should eq "invalid-params"
+    invalid_params.code.should eq -32602
+    invalid_params.data.should eq "parameters are invalid"
   end
 
-  describe ".from_json" do
-    it "pulls from json" do
-      _example = JSONRPC::InvalidRequest.from_json(example.to_json)
-      example.code.should eq(_example.code)
-      example.message.should eq(_example.message)
-      example.data.should eq(_example.data)
-    end
-  end
-end
-
-describe "JSONRPC::InvalidRequest" do
-  example = JSONRPC::MethodNotFound.new "method is not found!"
-
-  describe "any instance" do
-    it "code should always be -32601" do
-      example.code.should eq(-32601)
-    end
-
-    it "message should always be 'method-not-found'" do
-      example.message.should eq("method-not-found")
-    end
-
-    it "data should be 'method is not found!'" do
-      example.data.should eq("method is not found!")
-    end
+  it "constructs an 'internal error' error" do
+    internal_error = JSONRPC::Error.internal_error "an internal error occurred"
+    internal_error.message.should eq "internal-error"
+    internal_error.code.should eq -32603
+    internal_error.data.should eq "an internal error occurred"
   end
 
-  describe ".from_json" do
-    it "pulls from json" do
-      _example = JSONRPC::InvalidRequest.from_json(example.to_json)
-      example.code.should eq(_example.code)
-      example.message.should eq(_example.message)
-      example.data.should eq(_example.data)
-    end
+  it "constructs a 'parse error' error" do
+    parse_error = JSONRPC::Error.parse_error "error parsing the request"
+    parse_error.message.should eq "parse-error"
+    parse_error.code.should eq -32700
+    parse_error.data.should eq "error parsing the request"
   end
 end

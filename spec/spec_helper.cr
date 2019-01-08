@@ -1,6 +1,4 @@
 require "spec"
-require "http/server"
-
 require "../src/jsonrpc"
 
 class JSONRPC::SpecHandler < JSONRPC::Handler
@@ -9,6 +7,10 @@ class JSONRPC::SpecHandler < JSONRPC::Handler
     JSON.mapping(subtrahend: {type: Int32, getter: true}, minuend: {type: Int32, getter: true})
   end
 
+  def notify
+  end
+
+  @[JSONRPC::Method("subtract")]
   def subtract(numbers : Array(Int32)) : Int32
     start = numbers.shift
     numbers.reduce(start) do |memo, number|
@@ -16,6 +18,7 @@ class JSONRPC::SpecHandler < JSONRPC::Handler
     end
   end
 
+  @[JSONRPC::Method("subtract")]
   def subtract(pair : SubtractionHelper) : Int32
     pair.minuend - pair.subtrahend
   end
