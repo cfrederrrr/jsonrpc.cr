@@ -15,14 +15,10 @@ abstract class JSONRPC::Client
   # _never_ attempt to parse it. That will be handled by the `#invoke_method` methods
   abstract def submit_rpc
 
-  def invoke_method(name : String, )
-
-  end
-
   macro rpc_method(name, params, result)
-    def {{name.id}}(%params : {{params}}) : {{result}}
-      request = JSONRPC::Request({{params}}).new(%params)
-      JSONRPC::Context({{params}}, {{result}}).new(%params) do |request|
+    def {{name.id}}(%params : {{params}}) : JSONRPC::Context({{params}}, {{result}})
+      request = JSONRPC::Request({{params}}).new({{name.stringify}}, %params)
+      JSONRPC::Context({{params}}, {{result}}).new(request) do |request|
         submit_rpc(request.to_json)
       end
     end

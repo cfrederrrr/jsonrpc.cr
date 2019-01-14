@@ -20,11 +20,11 @@ abstract class JSONRPC::Handler
 
   def handle(parser : JSON::PullParser) : String
     name : String
-    _parser = parser.dup
+    name_parser = parser.dup
 
-    _parser.read_object do |key|
-      _parser.skip unless key == "method"
-      name = String.new(_parser)
+    name_parser.read_object do |key|
+      name_parser.skip unless key == "method"
+      name = String.new(name_parser)
       # we don't care about the rest and don't want to waste time reading it
       break
     end
