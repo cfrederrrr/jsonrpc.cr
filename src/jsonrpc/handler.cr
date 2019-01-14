@@ -4,7 +4,7 @@ abstract class JSONRPC::Handler
   # Handles notifications. This method will not return a response to the client,
   # so returning a value is not likely to be useful, unless you intend to do logging
   # outside the notify method
-  abstract def notify
+  # abstract def notify
 
   # Searches the request for the "method" key and passes it, and the request
   # to #invoke_rpc(name : String, request : String)
@@ -19,7 +19,7 @@ abstract class JSONRPC::Handler
   end
 
   def handle(parser : JSON::PullParser) : String
-    name : String
+    name : String = ""
     name_parser = parser.dup
 
     name_parser.read_object do |key|
@@ -30,7 +30,7 @@ abstract class JSONRPC::Handler
     end
 
     context = invoke_rpc(name, parser)
-    yield context if block_given?
+    yield context
     return context.response.to_json
   end
 
@@ -56,15 +56,7 @@ abstract class JSONRPC::Handler
   # - The last line of your class definition must be `expose_rpc`
   macro expose_rpc
     {% for m in @type.methods %}
-      {% if m.annotation(::JSONRPC::Method) %}
-        {% title = "#{@type}\##{m.name}" %}
-        {% if !m.annotation(::JSONRPC::Method).first %}
-          {% raise "#{title}'s JSONRPC::Method annotation needs a name" %}
-        {% end %}
-        {% if m.args.size > 1 %}
-          {% raise "#{title}: too many arguments - JSONRPC methods should take only one" %}
-        {% end %}
-      {% end %}
+
     {% end %}
 
     private def invoke_rpc(name : String, parser : JSON::PullParser) : JSONRPC::Context
@@ -73,25 +65,39 @@ abstract class JSONRPC::Handler
         # We don't care what type the params are, because the request cannot be processed
         # without a name
         JSONRPC::Context(JSON::Any, Nil).new(parser) do |request|
-          JSONRPC::InvalidRequest(Nil).new("method cannot empty", request.id)
+          JSONRPC::Response(Nil).new JSONRPC::Error.invalid_request("method cannot empty"), request.id
         end
-      {% for m in @type.methods %} {% mp = m.args.first.restriction %} {% mr = m.return_type %}
-      when {{m.first}}
-        {% if m.args.first %}
-        JSONRPC::Context({{mp}}, {{mr}}).new(parser) do |params|
-          {{m.name}}(params)
+      {% for m in @type.methods %}
+        {% anno = m.annotation(::JSONRPC::Method) %}
+        {% if anno %}
+          {% if !anno[0] %}
+            {% title = "#{@type}\##{m.name}" %}
+            {% if !anno[0] %}
+              {% raise "#{title}'s JSONRPC::Method annotation needs a name" %}
+            {% end %}
+            {% if m.args.size > 1 %}
+              {% raise "#{title}: too many arguments - JSONRPC methods should take only one" %}
+            {% end %}
+          {% end %}
+          {% mp = m.args.first.restriction %}
+          {% mr = m.return_type %}
+      when {{anno[0]}}
+          {% if m.args.first %}
+        JSONRPC::Context({{mp}}, {{mr}}).new(parser) do |request|
+          JSONRPC::Response({{mr}}).new {{m.name}}(request.params.as({{mp}})), request.id
         end
-        {% else %}
-        JSONRPC::Context({{mp}}, {{mr}}).new(parser) do
-          {{m.name}}
+          {% else %}
+        JSONRPC::Context({{mp}}, {{mr}}).new(parser) do |request|
+          JSONRPC::Response({{mr}}).new {{m.name}}, request.id
         end
+          {% end %}
         {% end %}
       {% end %}
       else
         # We don't care what type the params are, because the request cannot be processed
         # if it is not registered
         JSONRPC::Context(JSON::Any, Nil).new(parser) do
-          JSONRPC::MethodNotFound.new
+          JSONRPC::Response(Nil).new JSONRPC::Error.method_not_found
         end
       end
     end

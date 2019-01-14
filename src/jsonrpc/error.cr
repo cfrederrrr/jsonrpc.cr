@@ -8,7 +8,7 @@ class JSONRPC::Error
     data: {type: String?, nilable: true, default: nil, emit_null: false}
   )
 
-  def initialize(@message : String, @code : Int32, @data, : String? = nil)
+  def initialize(@message : String, @code : Int32, @data : String? = nil)
   end
 end
 

@@ -13,12 +13,12 @@ abstract class JSONRPC::Client
   #
   # This method should handle the actual conveyance of data to the server, but should
   # _never_ attempt to parse it. That will be handled by the `#invoke_method` methods
-  abstract def submit_rpc
+  abstract def submit_rpc(json : String)
 
-  macro rpc_method(name, params, result)
+  macro rpc_method(name, mname, params, result)
     def {{name.id}}(%params : {{params}}) : JSONRPC::Context({{params}}, {{result}})
-      request = JSONRPC::Request({{params}}).new({{name.stringify}}, %params)
-      JSONRPC::Context({{params}}, {{result}}).new(request) do |request|
+      %request = JSONRPC::Request({{params}}).new({{mname.stringify}}, %params)
+      JSONRPC::Context({{params}}, {{result}}).new(%request) do |request|
         submit_rpc(request.to_json)
       end
     end

@@ -6,7 +6,7 @@
 #
 # Neither clientside nor serverside should realistically bother with initializing this type
 # This shard intends to abstract that away from users.
-abstract class JSONRPC::Context(P, R)
+class JSONRPC::Context(P, R)
   alias SID = String | Int32 | Nil
 
   getter name : String
@@ -17,8 +17,8 @@ abstract class JSONRPC::Context(P, R)
   # Serverside initializer - incoming data will always be provided as a parser. See
   # `JSONRPC::Handler#invoke_rpc`
   def initialize(parser : JSON::PullParser)
-    @request = JSONRPC::Request(R).new(parser)
-    @name, @id = @request.name, @request.id
+    @request = JSONRPC::Request(P).new(parser)
+    @name, @id = @request.method, @request.id
     @response = yield(@request)
   end
 
@@ -29,14 +29,14 @@ abstract class JSONRPC::Context(P, R)
   end
 
   # Clientside initializer when request is initialized outside `JSONRPC::Context`
-  def initialize(@request : JSONRPC::Request(R))
-    @name, @id = @request.name, @request.id
+  def initialize(@request : JSONRPC::Request(P))
+    @name, @id = @request.method, @request.id
     @response = yield(@request)
   end
 
   # Either side initializer if both `@request` and `@response` are already initialized
   def initialize(@request : JSONRPC::Request(P), @response : JSONRPC::Response(R))
-    @name, @id = @request.name, @request.id
+    @name, @id = @request.method, @request.id
   end
 
   # According to JSON RPC 2.0 specification, a request without an `@id` is
@@ -65,7 +65,7 @@ abstract class JSONRPC::Context(P, R)
   #
   # This may change in the future, as there could be a situation where access to
   # an instance of `JSONRPC::Context` is necessary while it's still waiting on a
-  # response from the server.  
+  # response from the server.
   def error? : Bool
     return true unless @response
     !!@response.error
