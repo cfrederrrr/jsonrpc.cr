@@ -17,9 +17,9 @@ abstract class JSONRPC::Client
 
   macro rpc_method(name, mname, params, result)
     def {{name.id}}(%params : {{params}}) : JSONRPC::Context({{params}}, {{result}})
-      %request = JSONRPC::Request({{params}}).new({{mname.stringify}}, %params)
+      %request = JSONRPC::Request({{params}}).new({{mname}}, %params)
       JSONRPC::Context({{params}}, {{result}}).new(%request) do |request|
-        submit_rpc(request.to_json)
+        JSONRPC::Response({{result}}).from_json(submit_rpc(request.to_json))
       end
     end
   end
@@ -27,7 +27,7 @@ abstract class JSONRPC::Client
   macro rpc_notification(name, params)
     def {{name.id}}(%params : {{params}}) : Bool
       JSONRPC::Context({{params}}, {{result}}).new(%params) do |request|
-        submit_rpc(request.to_json)
+        JSONRPC::Response({{result}}).from_json(submit_rpc(request.to_json))
       end
 
       return true

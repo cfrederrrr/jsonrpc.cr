@@ -7,6 +7,7 @@ module JSONRPC
   end
 end
 
+require "./json/pull_parser"
 require "./jsonrpc/error"
 require "./jsonrpc/request"
 require "./jsonrpc/response"

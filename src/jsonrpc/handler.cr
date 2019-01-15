@@ -39,7 +39,7 @@ abstract class JSONRPC::Handler
       builder.array do
         parser.read_array do
           # handle(parser, &block) always returns a JSON encoded string
-          json.raw handle(parser, &block)
+          builder.raw handle(parser, &block)
         end
       end
     end
