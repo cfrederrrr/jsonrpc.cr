@@ -55,50 +55,46 @@ abstract class JSONRPC::Handler
   # - All methods annotated as a `JSONRPC::Method` must specify a return type
   # - The last line of your class definition must be `expose_rpc`
   macro expose_rpc
-    {% for m in @type.methods %}
-
-    {% end %}
-
     private def invoke_rpc(name : String, parser : JSON::PullParser) : JSONRPC::Context
       case name
-      when ""
-        # We don't care what type the params are, because the request cannot be processed
-        # without a name
-        JSONRPC::Context(JSON::Any, Nil).new(parser) do |request|
-          JSONRPC::Response(Nil).new JSONRPC::Error.invalid_request("method cannot empty"), request.id
-        end
       {% for m in @type.methods %}
-        {% anno = m.annotation(::JSONRPC::Method) %}
-        {% if anno %}
+        {% anno = m.annotation(::JSONRPC::Method) %} {% if anno %}
           {% if !anno[0] %}
-            {% title = "#{@type}\##{m.name}" %}
-            {% if !anno[0] %}
-              {% raise "#{title}'s JSONRPC::Method annotation needs a name" %}
-            {% end %}
-            {% if m.args.size > 1 %}
-              {% raise "#{title}: too many arguments - JSONRPC methods should take only one" %}
-            {% end %}
+            {% raise "#{@type}\##{m.name}'s JSONRPC::Method annotation needs a name" %}
+          {% end %}
+          {% if m.args.size > 1 %}
+            {% raise "#{@type}\##{m.name}: JSONRPC methods should take only 0-1 arguments" %}
           {% end %}
           {% mp = m.args.first.restriction %}
           {% mr = m.return_type %}
       when {{anno[0]}}
-          {% if m.args.first %}
-        JSONRPC::Context({{mp}}, {{mr}}).new(parser) do |request|
-          JSONRPC::Response({{mr}}).new {{m.name}}(request.params.as({{mp}})), request.id
-        end
-          {% else %}
-        JSONRPC::Context({{mp}}, {{mr}}).new(parser) do |request|
-          JSONRPC::Response({{mr}}).new {{m.name}}, request.id
-        end
-          {% end %}
+        request = JSONRPC::Request({{mp}}).new(parser)
+        response =
+          begin
+            result = {{m.name}}{% if m.args.first %}(request.params.as {{mp}}){% end %}
+            JSONRPC::Response({{mr}}).new(result, request.id)
+          rescue result : JSONRPC::Error
+            JSONRPC::Response(Nil).new(result, request.id)
+          rescue
+            JSONRPC::Response(Nil).new(JSONRPC::Error.internal_error, request.id)
+          end
+        JSONRPC::Context({{mp}}, {{mr}}).new(request, response)
         {% end %}
       {% end %}
+      when ""
+        # We don't care what type the params are, because the request cannot be processed
+        # without a name
+        request = JSONRPC::Request(JSON::Any).new(parser)
+        result = JSONRPC::Error.invalid_request("method cannot be empty")
+        response = JSONRPC::Response(Nil).new(result, request.id)
+        JSONRPC::Context(JSON::Any, Nil).new(request, response)
       else
         # We don't care what type the params are, because the request cannot be processed
         # if it is not registered
-        JSONRPC::Context(JSON::Any, Nil).new(parser) do
-          JSONRPC::Response(Nil).new JSONRPC::Error.method_not_found
-        end
+        request = JSONRPC::Request(JSON::Any).new(parser)
+        result = JSONRPC::Error.method_not_found
+        response = JSONRPC::Response(Nil).new(result, request.id)
+        JSONRPC::Context(JSON::Any, Nil).new(request, response) do
       end
     end
   end
