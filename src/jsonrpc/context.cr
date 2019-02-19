@@ -14,26 +14,6 @@ class JSONRPC::Context(P, R)
   getter request : JSONRPC::Request(P)
   getter response : JSONRPC::Response(R)?
 
-  # Serverside initializer - incoming data will always be provided as a parser. See
-  # `JSONRPC::Handler#invoke_rpc`
-  def initialize(parser : JSON::PullParser)
-    @request = JSONRPC::Request(P).new(parser)
-    @name, @id = @request.method, @request.id
-    @response = yield(@request)
-  end
-
-  # Clientside initializer
-  def initialize(@name : String, params : P, @id : SID = rand(0x7fffffff))
-    @request = JSONRPC::Request(P).new(params)
-    @response = yield(@request)
-  end
-
-  # Clientside initializer when request is initialized outside `JSONRPC::Context`
-  def initialize(@request : JSONRPC::Request(P))
-    @name, @id = @request.method, @request.id
-    @response = yield(@request)
-  end
-
   # Either side initializer if both `@request` and `@response` are already initialized
   def initialize(@request : JSONRPC::Request(P), @response : JSONRPC::Response(R))
     @name, @id = @request.method, @request.id
