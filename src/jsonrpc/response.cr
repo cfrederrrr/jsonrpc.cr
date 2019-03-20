@@ -1,6 +1,8 @@
 require "json"
 
 class JSONRPC::Response(R)
+  include JSON::Serializable
+
   alias SID = String | Int32 | Nil
 
   # JSON RPC version indicator.
@@ -20,38 +22,6 @@ class JSONRPC::Response(R)
 
   # Response has to include the same `@id` as its corresponding `Request`
   getter id : SID
-
-  JSON.mapping(
-    jsonrpc: {
-      type:    String,
-      getter:  false,
-      setter:  false,
-      default: "2.0"
-    },
-    result: {
-      type:      R?,
-      getter:    false,
-      setter:    false,
-      nilable:   true,
-      emit_null: false,
-      default: nil
-    },
-    error: {
-      type:      JSONRPC::Error?,
-      getter:    false,
-      setter:    false,
-      nilable:   true,
-      emit_null: false,
-      default:   nil
-    },
-    id: {
-      type:      SID,
-      getter:    false,
-      setter:    false,
-      nilable:   true,
-      emit_null: true
-    }
-  )
 
   # Serverside can create a new `Response(R)` with direct arguments, rather than with a pullparser
   def initialize(@result : R, @id : SID = nil, @jsonrpc = "2.0")

@@ -10,23 +10,24 @@ abstract class JSONRPC::Handler
   # to #invoke_rpc(name : String, request : String)
   def handle(json : String, &block) : String
     parser = JSON::PullParser.new(json)
-
+    classifier = JSON::PullParser.new(json)
     case parser.kind
-    when :begin_object then handle(parser, &block)
-    when :begin_array  then handle_batch(parser, &block)
+    when :begin_object then handle_request(parser, classifier, &block)
+    when :begin_array  then handle_batch(parser, classifier, &block)
     else                    JSONRPC::Response(Nil).new(JSONRPC::Error.invalid_request).to_json
     end
   end
 
-  def handle(parser : JSON::PullParser) : String
-    name : String = ""
-    name_parser = parser.dup
+  def handle_request(parser : JSON::PullParser, classifier : JSON::PullParser) : String | Nil
+    id = nil
+    name = ""
 
-    name_parser.read_object do |key|
-      name_parser.skip unless key == "method"
-      name = String.new(name_parser)
-      # we don't care about the rest and don't want to waste time reading it
-      break
+    classifier.read_object do |key|
+      case key
+      when "method" then name = String.new(classifier)
+      when "id"     then id   = Union(String, Int32, Nil).new(parser)
+      else               classifier.skip
+      end
     end
 
     context = invoke_rpc(name, parser)
@@ -34,14 +35,18 @@ abstract class JSONRPC::Handler
     return context.response.to_json
   end
 
-  def handle_batch(parser : JSON::PullParser, &block) : String
-    JSON.build do |builder|
-      builder.array do
-        parser.read_array do
-          # handle(parser, &block) always returns a JSON encoded string
-          builder.raw handle(parser, &block)
-        end
+  def handle_batch(parser : JSON::PullParser, classifier : JSON::PullParser, &block) : String
+    responses = [] of String
+
+    parser.read_array do
+      classifier.read_array do
+        response = handle_request(parser, classifier, &block)
+        responses.push(response) if response
       end
+    end
+
+    JSON.build do |builder|
+      builder.array{ builder.raw responses.join(',') }
     end
   end
 
@@ -69,8 +74,7 @@ abstract class JSONRPC::Handler
           {% mr = m.return_type %}
       when {{anno[0]}}
         request = JSONRPC::Request({{mp}}).new(parser)
-        response =
-          begin
+        response = begin
             result = {{m.name}}{% if m.args.first %}(request.params.as {{mp}}){% end %}
             JSONRPC::Response({{mr}}).new(result, request.id)
           rescue result : JSONRPC::Error

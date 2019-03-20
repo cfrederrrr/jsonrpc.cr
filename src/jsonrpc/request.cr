@@ -16,15 +16,17 @@ require "json"
 #
 # The server implementation always uses Request(JSON::Any)
 class JSONRPC::Request(P)
+  include JSON::Serializable
+
   alias SID = String | Int32 | Nil
 
   # A `String` specifying the RPC method to be invoked.
   getter method : String
 
-  # An `Array` or `Hash` that holds the parameter arguments.
-  # - `Array` means positional arguments
-  # - `Hash` means named arguments
-  # - Omitting this key means no arguments.
+  # The parameter object of the method named in `method`.
+  #
+  # `P` could be an array, or array like type in the case that
+  # the named method takes positional arguments.
   getter params : P?
 
   # An identifier established by the client. If `nil` or excluded, then
@@ -34,34 +36,6 @@ class JSONRPC::Request(P)
 
   # A `String` indicating the JSONRPC version
   getter jsonrpc : String
-
-  JSON.mapping(
-    jsonrpc: {
-      type:    String,
-      getter:  false,
-      setter:  false,
-      default: "2.0",
-    },
-    method: {
-      type:   String,
-      getter: false,
-      setter: false,
-    },
-    params: {
-      type:      P?,
-      getter:    false,
-      setter:    false,
-      nilable:   true,
-      emit_null: false,
-    },
-    id: {
-      type:      SID,
-      getter:    false,
-      setter:    false,
-      nilable:   true,
-      emit_null: false,
-    }
-  )
 
   # Clientside can create a new `Request(P)` with direct arguments, rather than with a pullparser
   def initialize(@method : String, @params : P? = nil, @id : SID = nil, @jsonrpc = "2.0")
