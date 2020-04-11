@@ -3,13 +3,15 @@ require "./spec_helper"
 #
 # examples taken from http://www.jsonrpc.org/specification#examples
 #
-describe "JSONRPC" do
+describe "JSON::RPC" do
   it "handles an rpc call with positional parameters" do
     # --> req = %({"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1})
     # <-- {"jsonrpc": "2.0", "result": 19, "id": 1}
     #
     # --> req = %({"jsonrpc": "2.0", "method": "subtract", "params": [23, 42], "id": 2})
     # <-- {"jsonrpc":"2.0","result":-19,"id":2}
+    result = CLIENT.subtract [42, 23]
+    result.should eq(19)
   end
 
   it "handles an rpc call with named parameters" do
@@ -18,6 +20,8 @@ describe "JSONRPC" do
     #
     # --> req = %({"jsonrpc": "2.0", "method": "subtract", "params": {"minuend": 42, "subtrahend": 23}, "id": 4})
     # <-- {"jsonrpc":"2.0","result":19,"id":4}
+    result = CLIENT.subtract SubtractionHelper.new(23, 42)
+    result.should eq(19)
   end
 
   it "handles a Notification" do

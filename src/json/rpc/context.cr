@@ -6,17 +6,23 @@
 #
 # Neither clientside nor serverside should realistically bother with initializing this type
 # This shard intends to abstract that away from users.
-class JSONRPC::Context(P, R)
+class JSON::RPC::Context(P, R)
   alias SID = String | Int32 | Nil
 
   getter name : String
   getter id : SID
-  getter request : JSONRPC::Request(P)
-  getter response : JSONRPC::Response(R)?
+  getter request : JSON::RPC::Request(P)
+  getter response : JSON::RPC::Response(R)?
 
   # Either side initializer if both `@request` and `@response` are already initialized
-  def initialize(@request : JSONRPC::Request(P), @response : JSONRPC::Response(R))
+  def initialize(@request : JSON::RPC::Request(P), @response : JSON::RPC::Response(R))
     @name, @id = @request.method, @request.id
+  end
+
+  def initialize(@request : JSON::RPC::Request(P))
+    @id = nil
+    @response = nil
+    @name = @request.method
   end
 
   # According to JSON RPC 2.0 specification, a request without an `@id` is
@@ -31,20 +37,20 @@ class JSONRPC::Context(P, R)
   end
 
   # Easy access to the result of the `@response`
-  def result : R
-    @response.result
+  def result : R?
+    @response.result unless self.notification?
   end
 
   # Easy access to the error of the `@response`
-  def error : JSONRPC::Error
-    @response.error
+  def error : JSON::RPC::Error?
+    @response.error if error?
   end
 
   # Returns true if `@response` does not exist, or if the error `@response`
   # object is not nil. Otherwise, false.
   #
   # This may change in the future, as there could be a situation where access to
-  # an instance of `JSONRPC::Context` is necessary while it's still waiting on a
+  # an instance of `JSON::RPC::Context` is necessary while it's still waiting on a
   # response from the server.
   def error? : Bool
     return true unless @response

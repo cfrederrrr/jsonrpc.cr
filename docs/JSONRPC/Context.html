@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Crystal Docs 0.27.1">
+
+
+<link href="../css/style.css" rel="stylesheet" type="text/css">
+
+<script type="text/javascript" src="../js/doc.js"></script>
+<script type="text/javascript">
+  CrystalDoc.base_path = "../";
+</script>
+
+  <meta id="repository-name" content="github.com/galvertez/jsonrpc.cr">
+  <title>JSONRPC::Context(P, R) - github.com/galvertez/jsonrpc.cr</title>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="repository-links">
+      <a href="../index.html">README</a>
+    </div>
+  </div>
+
+  <div class="search-results" class="hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class="parent open current" data-id="github.com/galvertez/jsonrpc.cr/JSONRPC" data-name="jsonrpc">
+      <a href="../JSONRPC.html">JSONRPC</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/galvertez/jsonrpc.cr/JSONRPC/Client" data-name="jsonrpc::client">
+      <a href="../JSONRPC/Client.html">Client</a>
+      
+    </li>
+  
+  <li class="parent open current" data-id="github.com/galvertez/jsonrpc.cr/JSONRPC/Context" data-name="jsonrpc::context(p, r)">
+      <a href="../JSONRPC/Context.html">Context</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/galvertez/jsonrpc.cr/JSONRPC/Context/SID" data-name="jsonrpc::context::sid">
+      <a href="../JSONRPC/Context/SID.html">SID</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="github.com/galvertez/jsonrpc.cr/JSONRPC/Error" data-name="jsonrpc::error">
+      <a href="../JSONRPC/Error.html">Error</a>
+      
+    </li>
+  
+  <li class="parent " data-id="github.com/galvertez/jsonrpc.cr/JSONRPC/Handler" data-name="jsonrpc::handler">
+      <a href="../JSONRPC/Handler.html">Handler</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/galvertez/jsonrpc.cr/JSONRPC/Handler/Premade" data-name="jsonrpc::handler::premade">
+      <a href="../JSONRPC/Handler/Premade.html">Premade</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="github.com/galvertez/jsonrpc.cr/JSONRPC/Method" data-name="jsonrpc::method">
+      <a href="../JSONRPC/Method.html">Method</a>
+      
+    </li>
+  
+  <li class="parent " data-id="github.com/galvertez/jsonrpc.cr/JSONRPC/Request" data-name="jsonrpc::request(p)">
+      <a href="../JSONRPC/Request.html">Request</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/galvertez/jsonrpc.cr/JSONRPC/Request/SID" data-name="jsonrpc::request::sid">
+      <a href="../JSONRPC/Request/SID.html">SID</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="github.com/galvertez/jsonrpc.cr/JSONRPC/Response" data-name="jsonrpc::response(r)">
+      <a href="../JSONRPC/Response.html">Response</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/galvertez/jsonrpc.cr/JSONRPC/Response/SID" data-name="jsonrpc::response::sid">
+      <a href="../JSONRPC/Response/SID.html">SID</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="github.com/galvertez/jsonrpc.cr/Something" data-name="something">
+      <a href="../Something.html">Something</a>
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<h1 class="type-name">
+
+  <span class="kind">class</span> JSONRPC::Context(P, R)
+
+</h1>
+
+
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../JSONRPC/Context.html">JSONRPC::Context(P, R)</a></li><li class="superclass">Reference</li><li class="superclass">Object</li></ul>
+
+
+
+
+  <h2>Overview</h2>
+
+  <p>A container class for JSON RPC method invocation includes the name, id, request and response
+of the scenario</p>
+
+<p>Comes with some convenience methods for assessing the status of the invocation and
+inspecting the data of the request and response</p>
+
+<p>Neither clientside nor serverside should realistically bother with initializing this type
+This shard intends to abstract that away from users.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>Defined in:</h2>
+  
+    
+      <a href="https://github.com/galvertez/jsonrpc.cr/blob/200300636766d003c24da5b79285f674e3964723/src/jsonrpc/context.cr#L9" target="_blank">
+        jsonrpc/context.cr
+      </a>
+    
+    <br/>
+  
+
+
+
+
+
+  <h2>Constructors</h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#new%28request%3AJSONRPC%3A%3ARequest%28P%29%2Cresponse%3AJSONRPC%3A%3AResponse%28R%29%29-class-method" class="signature"><strong>.new</strong>(request : JSONRPC::Request(P), response : JSONRPC::Response(R))</a>
+        
+          <div class="summary"><p>Either side initializer if both <code>@request</code> and <code>@response</code> are already initialized</p></div>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+  <h2>Instance Method Summary</h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#error%3AJSONRPC%3A%3AError-instance-method" class="signature"><strong>#error</strong> : JSONRPC::Error</a>
+        
+          <div class="summary"><p>Easy access to the error of the <code>@response</code></p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#error%3F%3ABool-instance-method" class="signature"><strong>#error?</strong> : Bool</a>
+        
+          <div class="summary"><p>Returns true if <code>@response</code> does not exist, or if the error <code>@response</code> object is not nil.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#id%3ASID-instance-method" class="signature"><strong>#id</strong> : SID</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#name%3AString-instance-method" class="signature"><strong>#name</strong> : String</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#notification%3F%3ABool-instance-method" class="signature"><strong>#notification?</strong> : Bool</a>
+        
+          <div class="summary"><p>According to JSON RPC 2.0 specification, a request without an <code>@id</code> is considered a notification and does not require a response</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#params%3AP-instance-method" class="signature"><strong>#params</strong> : P</a>
+        
+          <div class="summary"><p>Easy access to the params of the <code>@request</code></p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#request%3AJSONRPC%3A%3ARequest%28P%29-instance-method" class="signature"><strong>#request</strong> : JSONRPC::Request(P)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#response%3AJSONRPC%3A%3AResponse%28R%29%3F-instance-method" class="signature"><strong>#response</strong> : JSONRPC::Response(R)?</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#result%3AR-instance-method" class="signature"><strong>#result</strong> : R</a>
+        
+          <div class="summary"><p>Easy access to the result of the <code>@response</code></p></div>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+<div class="methods-inherited">
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
+  
+</div>
+
+
+  <h2>Constructor Detail</h2>
+  
+    <div class="entry-detail" id="new(request:JSONRPC::Request(P),response:JSONRPC::Response(R))-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(request : <a href="../JSONRPC/Request.html">JSONRPC::Request</a>(P), response : <a href="../JSONRPC/Response.html">JSONRPC::Response</a>(R))
+
+        <a class="method-permalink" href="#new%28request%3AJSONRPC%3A%3ARequest%28P%29%2Cresponse%3AJSONRPC%3A%3AResponse%28R%29%29-class-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Either side initializer if both <code>@request</code> and <code>@response</code> are already initialized</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/galvertez/jsonrpc.cr/blob/200300636766d003c24da5b79285f674e3964723/src/jsonrpc/context.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+
+
+  <h2>Instance Method Detail</h2>
+  
+    <div class="entry-detail" id="error:JSONRPC::Error-instance-method">
+      <div class="signature">
+        
+        def <strong>error</strong> : <a href="../JSONRPC/Error.html">JSONRPC::Error</a>
+
+        <a class="method-permalink" href="#error%3AJSONRPC%3A%3AError-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Easy access to the error of the <code>@response</code></p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/galvertez/jsonrpc.cr/blob/200300636766d003c24da5b79285f674e3964723/src/jsonrpc/context.cr#L39" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="error?:Bool-instance-method">
+      <div class="signature">
+        
+        def <strong>error?</strong> : Bool
+
+        <a class="method-permalink" href="#error%3F%3ABool-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Returns true if <code>@response</code> does not exist, or if the error <code>@response</code>
+object is not nil. Otherwise, false.</p>
+
+<p>This may change in the future, as there could be a situation where access to
+an instance of <code><a href="../JSONRPC/Context.html">JSONRPC::Context</a></code> is necessary while it's still waiting on a
+response from the server.</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/galvertez/jsonrpc.cr/blob/200300636766d003c24da5b79285f674e3964723/src/jsonrpc/context.cr#L49" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="id:SID-instance-method">
+      <div class="signature">
+        
+        def <strong>id</strong> : <a href="../JSONRPC/Context/SID.html">SID</a>
+
+        <a class="method-permalink" href="#id%3ASID-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/galvertez/jsonrpc.cr/blob/200300636766d003c24da5b79285f674e3964723/src/jsonrpc/context.cr#L15" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="name:String-instance-method">
+      <div class="signature">
+        
+        def <strong>name</strong> : String
+
+        <a class="method-permalink" href="#name%3AString-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/galvertez/jsonrpc.cr/blob/200300636766d003c24da5b79285f674e3964723/src/jsonrpc/context.cr#L14" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="notification?:Bool-instance-method">
+      <div class="signature">
+        
+        def <strong>notification?</strong> : Bool
+
+        <a class="method-permalink" href="#notification%3F%3ABool-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>According to JSON RPC 2.0 specification, a request without an <code>@id</code> is
+considered a notification and does not require a response</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/galvertez/jsonrpc.cr/blob/200300636766d003c24da5b79285f674e3964723/src/jsonrpc/context.cr#L24" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="params:P-instance-method">
+      <div class="signature">
+        
+        def <strong>params</strong> : P
+
+        <a class="method-permalink" href="#params%3AP-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Easy access to the params of the <code>@request</code></p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/galvertez/jsonrpc.cr/blob/200300636766d003c24da5b79285f674e3964723/src/jsonrpc/context.cr#L29" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="request:JSONRPC::Request(P)-instance-method">
+      <div class="signature">
+        
+        def <strong>request</strong> : <a href="../JSONRPC/Request.html">JSONRPC::Request</a>(P)
+
+        <a class="method-permalink" href="#request%3AJSONRPC%3A%3ARequest%28P%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/galvertez/jsonrpc.cr/blob/200300636766d003c24da5b79285f674e3964723/src/jsonrpc/context.cr#L16" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="response:JSONRPC::Response(R)?-instance-method">
+      <div class="signature">
+        
+        def <strong>response</strong> : <a href="../JSONRPC/Response.html">JSONRPC::Response</a>(R)?
+
+        <a class="method-permalink" href="#response%3AJSONRPC%3A%3AResponse%28R%29%3F-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/galvertez/jsonrpc.cr/blob/200300636766d003c24da5b79285f674e3964723/src/jsonrpc/context.cr#L17" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="result:R-instance-method">
+      <div class="signature">
+        
+        def <strong>result</strong> : R
+
+        <a class="method-permalink" href="#result%3AR-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Easy access to the result of the <code>@response</code></p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/galvertez/jsonrpc.cr/blob/200300636766d003c24da5b79285f674e3964723/src/jsonrpc/context.cr#L34" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+
+</div>
+
+</body>
+</html>
