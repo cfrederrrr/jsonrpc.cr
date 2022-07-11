@@ -7,31 +7,83 @@
 # the transport logic yourself.
 #
 abstract class JSON::RPC::Client
+  alias SID = String | Int32 | Nil
+
 
   # `submit_request` method should take one argument (serialized JSON) and should return
   # `String` (which will be serialized JSON as well)
   #
-  # This method should handle the actual conveyance of data to the server, but should
-  # _never_ attempt to parse it. That will be handled by the `#invoke_method` methods
-  abstract def submit_request(json : String) : String
-  abstract def submit_batch(json : String) : String
+  # This method should handle the actual conveyance of data to and from the server, but should
+  # _not_ attempt to parse it. That will be handled by the methods defined in the `rpc`
+  # macro instead.
+  abstract private def submit_request(json : IO|String) : IO|String
+  abstract private def submit_batch(json : IO|String) : IO|String
+  abstract private def genid : SID
 
-  macro rpcdef(name, params, result)
-    {% method_name = name.underscore.tr("- ", "_") %}
-    def {{method_name.id}}(params : {{params}}) : JSON::RPC::Context({{params}}, {{result}})
-      request = JSON::RPC::Request({{params}}).new("{{name.id}}", params)
-      %response = submit_request(request.to_json)
-      response = JSON::RPC::Response({{result}}).new(%response)
-      JSON::RPC::Context({{params}}, {{result}}).new(request, response)
-    end
+  def log(ctx : Context)
   end
 
-  macro notify(name, params)
-    def {{name.id}}(%params : {{params}}) : Bool
-      request = JSON::RPC::Request({{params}}).new("{{name.id}}", %params)
-      context = JSON::RPC::Context({{params}}, Nil).new(request, nil)
-      submit_request(request.to_json)
-      return true
+  macro rpc(defines, *, takes=nil, returns=nil, calls=false, notifies=false)
+    {% raise "cannot define 'calls' and 'notifies' in the same rpc" if notifies && calls %}
+    {% raise "cannot define both 'notifies' and 'returns' in the same rpc" if notifies && returns %}
+
+    {% begin %}
+      {% defsig = "#{defines.id}(" %}
+      {% req = "Request(#{takes.id}).new(#{calls.id.stringify}, " %}
+
+      {% if takes.nil? %} # do nothing
+        {% req = "Request(Nil).new(#{calls.id.stringify}, " %}
+      {% elsif takes.is_a?(TupleLiteral) %}
+        {% req += "{" %}
+        {% for t, i in takes %}
+          {% defsig += "arg#{i.id} : #{t.id}," %}
+          {% req += "arg#{i.id}," %}
+        {% end %}
+        {% req += "}"%}
+      {% elsif takes.is_a?(NamedTupleLiteral) %}
+        {% req += "{" %}
+        {% for a, t in takes %}
+          {% defsig += "#{a.id} : #{t.id}," %}
+          {% req += "#{a.id}," %}
+        {% end %}
+        {% req += "}" %}
+      {% elsif takes.is_a?(TypeNode) %}
+        {% defsig += "params : #{takes.id}" %}
+        {% req += "params" %}
+      {% else %}
+        {% raise "invalid 'takes' value - must be singular TypeNode or Tuple of TypeNode(s)" %}
+      {% end %}
+
+      {% if calls %}
+        {% req += "id: self.genid()" %}
+      {% end %}
+      {% req += ")" %}
+      {% defsig += ")" %}
+
+      {% if calls %}
+        {% defsig += " : Context(" + takes.stringify + ", " + returns.stringify + ")" %}
+      {% end %}
+
+      {% for yielding in {true, false} %}
+    def {{defsig.id}}
+      request = {{req.id}}
+
+      {% if calls %}
+        %response = submit_request(request.to_json)
+        response = Response({{returns}}).new(%response)
+        context = Context({{takes}}, {{returns}}).new(request, response)
+        {% if yielding %} yield context {% end %}
+        self.log(context)
+        return response.result ? response.result : response.error
+      {% else %}
+        submit_request(request.to_json)
+        context = Context({{takes}}, Nil).new(request, nil)
+        self.log(context)
+        return
+      {% end %}
+
     end
+      {% end %}
+    {% end %}
   end
 end

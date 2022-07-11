@@ -11,15 +11,15 @@ class JSON::RPC::Context(P, R)
 
   getter name : String
   getter id : SID
-  getter request : JSON::RPC::Request(P)
-  getter response : JSON::RPC::Response(R)?
+  getter request : Request(P)
+  getter response : Response(R)?
 
   # Either side initializer if both `@request` and `@response` are already initialized
-  def initialize(@request : JSON::RPC::Request(P), @response : JSON::RPC::Response(R))
+  def initialize(@request : Request(P), @response : Response(R))
     @name, @id = @request.method, @request.id
   end
 
-  def initialize(@request : JSON::RPC::Request(P))
+  def initialize(@request : Request(P))
     @id = nil
     @response = nil
     @name = @request.method
